@@ -143,7 +143,6 @@ def analyze_manifest_windows(manifest_content):
         # Ищем информацию о пакете в бинарном содержимом
         apatch_patterns = [
             b'me.bmax.apatch',
-            b'me\.bmax\.apatch',
             b'APApplication',
             b'apatch'
         ]
