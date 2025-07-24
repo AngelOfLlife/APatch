@@ -5,7 +5,6 @@
 ### 🔧 **Основные инструменты:**
 - **`windows_quick_extract.py`** - Python скрипт для извлечения подписей (без зависимостей)
 - **`extract_apatch_windows.bat`** - Batch файл для удобного запуска
-- **`quick_add_extracted_secrets.bat`** - Быстрое добавление секретов в GitHub
 
 ### 📋 **Документация:**
 - **`WINDOWS_GUIDE.md`** - Подробное руководство для Windows 10 (280+ строк)

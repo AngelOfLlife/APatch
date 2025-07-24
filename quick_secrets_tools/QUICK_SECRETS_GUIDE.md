@@ -8,7 +8,7 @@
 ## ⚡ **Два варианта скриптов:**
 
 ### 🐧 **Linux/macOS:** `quick_add_extracted_secrets.sh`
-### 🖥️ **Windows:** `windows_tools/quick_add_extracted_secrets.bat`
+### 🖥️ **Windows:** `quick_add_extracted_secrets.bat`
 
 ---
 
