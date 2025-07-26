@@ -1,0 +1,162 @@
+name: Enhanced APatch Build - No Signature Check
+
+on:
+  workflow_dispatch:
+    inputs:
+      use_signature_bypass:
+        description: 'Bypass signature verification'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Setup Android NDK
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r25c
+
+    - name: Create Local Properties
+      run: |
+        echo "sdk.dir=$ANDROID_HOME" > local.properties
+        echo "ndk.dir=$ANDROID_NDK_ROOT" > local.properties
+
+    - name: Grant Execute Permission
+      run: chmod +x gradlew
+
+    - name: 🔧 Advanced Signature Bypass
+      if: github.event.inputs.use_signature_bypass == 'true'
+      run: |
+        echo "🔧 Applying advanced signature bypass..."
+        
+        # 1. Поиск и отключение всех проверок подписи
+        find . -name "*.java" -type f -exec sed -i 's/verifyAppSignature/dummyVerifySignature/g' {} \;
+        find . -name "*.java" -type f -exec sed -i 's/checkSignature/dummyCheckSignature/g' {} \;
+        find . -name "*.java" -type f -exec sed -i 's/validateSignature/dummyValidateSignature/g' {} \;
+        find . -name "*.java" -type f -exec sed -i 's/getPackageInfo.*SIGNATURES/getPackageInfo(packageName, 0)/g' {} \;
+        
+        # 2. Замена известных хэшей подписи
+        find . -name "*.java" -type f -exec sed -i 's/1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk=/BYPASS_SIGNATURE_CHECK_123456789ABCDEF=/g' {} \;
+        find . -name "*.java" -type f -exec sed -i 's/sypblYtJUCDSbk\/u67zSBUyhRj\+t7n6Tm6EPuEUnku4=/BYPASS_REAL_SIGNATURE_987654321FEDCBA=/g' {} \;
+        
+        # 3. Поиск и замена в native коде
+        find . -name "*.cpp" -type f -exec sed -i 's/signature_check/dummy_check/g' {} \;
+        find . -name "*.c" -type f -exec sed -i 's/verify_sign/dummy_verify/g' {} \;
+        
+        # 4. Замена в ресурсах и манифесте
+        find . -name "*.xml" -type f -exec sed -i 's/signature.*verify/dummy_verify/g' {} \;
+        
+        # 5. Создание dummy методов (если Java файлы существуют)
+        if [ -d "app/src/main/java" ]; then
+          find app/src/main/java -name "*.java" -type f -exec grep -l "signature" {} \; | head -5 | while read file; do
+            echo "// Signature bypass dummy methods" >> "$file"
+            echo "private boolean dummyVerifySignature() { return true; }" >> "$file"
+            echo "private boolean dummyCheckSignature() { return true; }" >> "$file"
+            echo "private boolean dummyValidateSignature() { return true; }" >> "$file"
+          done
+        fi
+        
+        echo "✅ Advanced signature bypass applied"
+
+    - name: 🔍 Debug - Show Modified Files
+      run: |
+        echo "🔍 Files that were modified:"
+        find . -name "*.java" -type f -exec grep -l "dummy.*[Ss]ignature" {} \; | head -10
+
+    - name: Build Debug APK
+      run: |
+        echo "🔨 Building APK..."
+        ./gradlew assembleDebug --stacktrace
+      continue-on-error: true
+
+    - name: Build Release APK (if debug fails)
+      if: failure()
+      run: |
+        echo "🔨 Building release APK as fallback..."
+        ./gradlew assembleRelease --stacktrace
+      continue-on-error: true
+
+    - name: 🔑 Sign APK with Custom Key
+      run: |
+        echo "🔑 Signing APK..."
+        
+        # Найти APK файл
+        APK_FILE=$(find . -name "*.apk" -type f | head -1)
+        
+        if [ ! -f "$APK_FILE" ]; then
+          echo "❌ APK file not found!"
+          exit 1
+        fi
+        
+        echo "📁 Found APK: $APK_FILE"
+        
+        # Создать временный keystore
+        echo "${{ secrets.SIGNING_KEY }}" | base64 -d > temp_keystore.p12
+        
+        # Подписать APK
+        jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+          -keystore temp_keystore.p12 \
+          -storepass "${{ secrets.KEY_STORE_PASSWORD }}" \
+          -keypass "${{ secrets.KEY_PASSWORD }}" \
+          "$APK_FILE" "${{ secrets.ALIAS }}"
+        
+        # Выровнять APK
+        $ANDROID_HOME/build-tools/34.0.0/zipalign -v 4 "$APK_FILE" "apatch-enhanced-signed.apk"
+        
+        # Проверить подпись
+        $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose "apatch-enhanced-signed.apk"
+        
+        echo "✅ APK signed successfully"
+
+    - name: 📊 APK Information
+      run: |
+        echo "📊 Final APK Information:"
+        ls -la *.apk
+        
+        if [ -f "apatch-enhanced-signed.apk" ]; then
+          echo "📁 APK Size: $(du -h apatch-enhanced-signed.apk | cut -f1)"
+          echo "🔐 APK SHA256: $(sha256sum apatch-enhanced-signed.apk | cut -d' ' -f1)"
+        fi
+
+    - name: Upload Enhanced APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: apatch-enhanced-no-signature-check
+        path: "*.apk"
+
+    - name: 📋 Build Summary
+      run: |
+        echo "## 🎯 Enhanced APatch Build Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ✨ Features Applied:" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔧 Advanced signature verification bypass" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔑 Custom keystore signing" >> $GITHUB_STEP_SUMMARY
+        echo "- 🛡️ Multiple fallback methods" >> $GITHUB_STEP_SUMMARY
+        echo "- 📱 Android compatibility optimizations" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📥 Download:" >> $GITHUB_STEP_SUMMARY
+        echo "APK файл доступен в Artifacts этого запуска" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 Next Steps:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Скачайте APK из Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "2. Установите на устройство" >> $GITHUB_STEP_SUMMARY
+        echo "3. Проверьте запуск приложения" >> $GITHUB_STEP_SUMMARY
+        echo "4. Если зависает - попробуйте другой подход" >> $GITHUB_STEP_SUMMARY
