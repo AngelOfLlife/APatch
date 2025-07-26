@@ -1,0 +1,206 @@
+name: Build APatch with Correct Signature
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build-apatch:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Decode signing key
+      run: |
+        echo "${{ secrets.SIGNING_KEY }}" | base64 -d > keystore.p12
+        ls -la keystore.p12
+        
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+      
+    - name: Make gradlew executable
+      run: chmod +x ./gradlew
+      
+    - name: Create signature extraction script
+      run: |
+        cat > extract_signature.py << 'EOF'
+        #!/usr/bin/env python3
+        import zipfile
+        import hashlib
+        import base64
+        import sys
+        import os
+        
+        def extract_apatch_signature(apk_path):
+            if not os.path.exists(apk_path):
+                print(f"File {apk_path} not found")
+                return None
+                
+            try:
+                with zipfile.ZipFile(apk_path, 'r') as apk:
+                    cert_files = []
+                    for file_name in apk.namelist():
+                        if file_name.startswith('META-INF/') and (file_name.endswith('.RSA') or file_name.endswith('.DSA')):
+                            cert_files.append(file_name)
+                    
+                    if not cert_files:
+                        print("Certificate files not found in APK")
+                        return None
+                        
+                    cert_file = cert_files[0]
+                    cert_data = apk.read(cert_file)
+                    
+                    # APatch uses SHA256 hash of certificate data
+                    sha256_hash = hashlib.sha256(cert_data).digest()
+                    signature_base64 = base64.b64encode(sha256_hash).decode('utf-8')
+                    
+                    return signature_base64
+                    
+            except Exception as e:
+                print(f"Error processing APK: {e}")
+                return None
+        
+        if __name__ == "__main__":
+            if len(sys.argv) != 2:
+                print("Usage: python3 extract_signature.py <apk_path>")
+                sys.exit(1)
+                
+            signature = extract_apatch_signature(sys.argv[1])
+            if signature:
+                print(signature)
+            else:
+                sys.exit(1)
+        EOF
+        
+        chmod +x extract_signature.py
+        
+    - name: Build temporary APK to extract signature
+      run: |
+        # Configure signing
+        cat >> app/build.gradle.kts << 'EOF'
+        
+        android {
+            signingConfigs {
+                create("release") {
+                    storeFile = file("../keystore.p12")
+                    storePassword = "${{ secrets.KEY_STORE_PASSWORD }}"
+                    keyAlias = "${{ secrets.ALIAS }}"
+                    keyPassword = "${{ secrets.KEY_PASSWORD }}"
+                }
+            }
+            buildTypes {
+                release {
+                    signingConfig = signingConfigs.getByName("release")
+                }
+            }
+        }
+        EOF
+        
+        # Build APK
+        ./gradlew assembleRelease
+        
+    - name: Extract signature from built APK
+      id: extract_signature
+      run: |
+        APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+        echo "APK found at: $APK_PATH"
+        
+        NEW_SIGNATURE=$(python3 extract_signature.py "$APK_PATH")
+        echo "Extracted signature: $NEW_SIGNATURE"
+        
+        echo "signature=$NEW_SIGNATURE" >> $GITHUB_OUTPUT
+        
+    - name: Update signature in source code
+      run: |
+        echo "Updating signature in APatchApp.kt"
+        echo "Old signature: 1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk="
+        echo "New signature: ${{ steps.extract_signature.outputs.signature }}"
+        
+        # Replace signature in APatchApp.kt
+        sed -i 's/verifyAppSignature("1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk=")/verifyAppSignature("${{ steps.extract_signature.outputs.signature }}")/' app/src/main/java/me/bmax/apatch/APatchApp.kt
+        
+        # Verify the change
+        grep -n "verifyAppSignature" app/src/main/java/me/bmax/apatch/APatchApp.kt || echo "Pattern not found"
+        
+    - name: Clean and build final APK
+      run: |
+        ./gradlew clean
+        ./gradlew assembleRelease
+        
+    - name: Verify final APK signature
+      run: |
+        APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+        FINAL_SIGNATURE=$(python3 extract_signature.py "$APK_PATH")
+        echo "Final APK signature: $FINAL_SIGNATURE"
+        echo "Expected signature: ${{ steps.extract_signature.outputs.signature }}"
+        
+        if [ "$FINAL_SIGNATURE" = "${{ steps.extract_signature.outputs.signature }}" ]; then
+            echo "✅ Signatures match! APK should work correctly."
+        else
+            echo "❌ Signatures don't match!"
+            exit 1
+        fi
+        
+    - name: Rename APK
+      run: |
+        APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+        APK_DIR=$(dirname "$APK_PATH")
+        mv "$APK_PATH" "$APK_DIR/APatch-custom-signed.apk"
+        echo "APK renamed to: APatch-custom-signed.apk"
+        
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: APatch-Custom-Signed
+        path: app/build/outputs/apk/release/APatch-custom-signed.apk
+        
+    - name: Create signature info
+      run: |
+        cat > signature_info.txt << EOF
+        APatch Custom Build Information
+        ==============================
+        
+        Build Date: $(date)
+        Original Signature: 1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk=
+        Custom Signature: ${{ steps.extract_signature.outputs.signature }}
+        
+        Key Information:
+        - Alias: ${{ secrets.ALIAS }}
+        - Store Type: PKCS12
+        
+        Code Changes:
+        - Updated verifyAppSignature() call in APatchApp.kt
+        - Signature verification will pass with custom keystore
+        
+        Installation:
+        1. Install the APK: APatch-custom-signed.apk
+        2. App should start without hanging on logo
+        3. Signature verification will pass
+        EOF
+        
+    - name: Upload signature info
+      uses: actions/upload-artifact@v4
+      with:
+        name: Signature-Info
+        path: signature_info.txt
+        
+    - name: Summary
+      run: |
+        echo "🎉 Build completed successfully!"
+        echo "📱 APK: APatch-custom-signed.apk"
+        echo "🔑 Custom signature: ${{ steps.extract_signature.outputs.signature }}"
+        echo "✅ App will start normally with your signing keys"

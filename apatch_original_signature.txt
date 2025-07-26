@@ -1,0 +1,41 @@
+APatch Original Signature Information
+=====================================
+
+File: app/src/main/java/me/bmax/apatch/APatchApp.kt
+Repository: https://github.com/bmax121/APatch
+Branch: main
+
+Original Signature Verification Code:
+-------------------------------------
+
+From line in APatchApp.kt:
+```kotlin
+if (!BuildConfig.DEBUG && !verifyAppSignature("1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk=")) {
+    while (true) {
+        val intent = Intent(Intent.ACTION_DELETE)
+        intent.data = "package:$packageName".toUri()
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+        startActivity(intent)
+        exitProcess(0)
+    }
+}
+```
+
+Original Signature Hash:
+1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk=
+
+This signature is checked during application startup to verify the integrity of the APatch app.
+If the signature verification fails in a non-debug build, the app will attempt to uninstall itself.
+
+Context:
+- This is part of the anti-tampering protection mechanism
+- The signature is Base64 encoded
+- The verification happens in the onCreate() method of APApplication class
+- The check is bypassed in debug builds (BuildConfig.DEBUG)
+
+Package Name: me.bmax.apatch
+Application Class: APApplication extends Application
+
+Note: This information was extracted on $(date) for research/educational purposes only.
+Use this information responsibly and in accordance with applicable laws and the project's GPL-3.0 license.
