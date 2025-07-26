@@ -1,0 +1,289 @@
+name: 🎯 Classic APatch Build - Own Signature Method
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_source:
+        description: 'Source for APK'
+        required: true
+        default: 'build'
+        type: choice
+        options:
+          - 'build'
+          - 'download_release'
+
+jobs:
+  classic-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: ☕ Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: 📱 Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: 🔧 Setup Android NDK
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: r25c
+
+    - name: 📝 Create Local Properties
+      run: |
+        echo "sdk.dir=$ANDROID_HOME" > local.properties
+        echo "ndk.dir=$ANDROID_NDK_ROOT" >> local.properties
+
+    - name: 🔐 Decode Signing Key
+      run: |
+        echo "${{ secrets.SIGNING_KEY }}" | base64 -d > keystore.p12
+
+    - name: ✅ Grant Execute Permission
+      run: chmod +x gradlew
+
+    - name: 🏗️ Build Original APK
+      if: github.event.inputs.apk_source == 'build'
+      run: |
+        echo "🏗️ Building original APK from source..."
+        ./gradlew assembleDebug --stacktrace || ./gradlew assembleRelease --stacktrace
+        
+        # Find built APK
+        APK_FILE=$(find . -name "*.apk" -type f | head -1)
+        echo "📱 Built APK: $APK_FILE"
+        
+        # Copy to standard location
+        cp "$APK_FILE" original-apatch.apk
+        echo "✅ Original APK ready: original-apatch.apk"
+
+    - name: 📥 Download Release APK
+      if: github.event.inputs.apk_source == 'download_release'
+      run: |
+        echo "📥 Downloading latest release APK..."
+        
+        # Get latest release download URL
+        DOWNLOAD_URL=$(curl -s https://api.github.com/repos/bmax121/APatch/releases/latest | \
+          grep "browser_download_url.*\.apk" | cut -d '"' -f 4 | head -1)
+        
+        if [ -z "$DOWNLOAD_URL" ]; then
+          echo "❌ No APK found in latest release"
+          exit 1
+        fi
+        
+        echo "🔗 Download URL: $DOWNLOAD_URL"
+        wget -O original-apatch.apk "$DOWNLOAD_URL"
+        echo "✅ Downloaded APK: original-apatch.apk"
+
+    - name: 🛠️ Install APK Tools
+      run: |
+        echo "🛠️ Installing APK analysis tools..."
+        
+        # Install apktool
+        wget -q https://github.com/iBotPeaches/Apktool/releases/download/v2.9.3/apktool_2.9.3.jar -O apktool.jar
+        echo '#!/bin/bash' > apktool
+        echo 'java -jar '"$(pwd)"'/apktool.jar "$@"' >> apktool
+        chmod +x apktool
+        sudo mv apktool /usr/local/bin/
+        sudo mv apktool.jar /usr/local/bin/
+        
+        # Verify installation
+        apktool --version
+        echo "✅ APK tools installed"
+
+    - name: 🔍 Extract Original Tokens & Generate Own Signature
+      run: |
+        echo "🔍 Extracting tokens from original APK..."
+        
+        # Create extraction script
+        cat > extract_tokens.py << 'EOF'
+        #!/usr/bin/env python3
+        import os, sys, zipfile, hashlib, base64, subprocess, re
+        
+        def extract_apk_tokens(apk_path):
+            tokens = {
+                'APATCH_REAL_SIGNATURE': None,
+                'APATCH_CODE_SIGNATURE': None,
+                'APATCH_PACKAGE_NAME': 'me.bmax.apatch',
+                'APATCH_APP_CLASS': 'APApplication',
+                'APATCH_SIGNATURE_METHOD': 'verifySignature'
+            }
+            
+            try:
+                with zipfile.ZipFile(apk_path, 'r') as apk:
+                    cert_files = [f for f in apk.namelist() if f.startswith('META-INF/') and (f.endswith('.RSA') or f.endswith('.DSA'))]
+                    if cert_files:
+                        cert_data = apk.read(cert_files[0])
+                        tokens['APATCH_REAL_SIGNATURE'] = base64.b64encode(hashlib.sha256(cert_data).digest()).decode('utf-8')
+                        tokens['APATCH_CODE_SIGNATURE'] = base64.b64encode(hashlib.md5(cert_data).digest()).decode('utf-8')
+                        print(f"✅ APATCH_REAL_SIGNATURE: {tokens['APATCH_REAL_SIGNATURE']}")
+                        print(f"✅ APATCH_CODE_SIGNATURE: {tokens['APATCH_CODE_SIGNATURE']}")
+            except Exception as e:
+                print(f"⚠️ Using default signatures: {e}")
+                tokens['APATCH_REAL_SIGNATURE'] = 'sypblYtJUCDSbk/u67zSBUyhRj+t7n6Tm6EPuEUnku4='
+                tokens['APATCH_CODE_SIGNATURE'] = '1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk='
+            
+            try:
+                result = subprocess.run(['aapt', 'dump', 'xmltree', apk_path, 'AndroidManifest.xml'], capture_output=True, text=True)
+                if result.returncode == 0:
+                    package_match = re.search(r'package="([^"]+)"', result.stdout)
+                    if package_match:
+                        tokens['APATCH_PACKAGE_NAME'] = package_match.group(1)
+                        print(f"✅ APATCH_PACKAGE_NAME: {tokens['APATCH_PACKAGE_NAME']}")
+            except:
+                pass
+            
+            with open('apatch_tokens.env', 'w') as f:
+                for key, value in tokens.items():
+                    f.write(f"{key}={value}\n")
+            
+            return tokens
+        
+        if __name__ == "__main__":
+            extract_apk_tokens(sys.argv[1])
+        EOF
+        
+        python3 extract_tokens.py original-apatch.apk
+        source apatch_tokens.env
+        
+        echo "🔑 Generating own signature from keystore..."
+        
+        # Extract our keystore signature
+        keytool -list -v -keystore keystore.p12 -storepass "${{ secrets.KEY_STORE_PASSWORD }}" \
+          -storetype PKCS12 > keystore_info.txt
+        
+        # Extract SHA256 fingerprint
+        OWN_SIGNATURE_HEX=$(grep "SHA256:" keystore_info.txt | sed 's/.*SHA256: //' | tr -d ':' | tr -d ' ')
+        
+        if [ ! -z "$OWN_SIGNATURE_HEX" ]; then
+          # Convert hex to base64
+          echo "$OWN_SIGNATURE_HEX" | xxd -r -p | base64 -w 0 > own_signature.txt
+          OWN_SIGNATURE=$(cat own_signature.txt)
+          echo "OWN_SIGNATURE=$OWN_SIGNATURE" >> apatch_tokens.env
+          echo "✅ Own signature: $OWN_SIGNATURE"
+        else
+          # Fallback: use provided signature
+          OWN_SIGNATURE="rHDyK+tan8zCy4AFxVTEUq8njHVAT3bO+drVJG8mOes="
+          echo "OWN_SIGNATURE=$OWN_SIGNATURE" >> apatch_tokens.env
+          echo "✅ Using provided signature: $OWN_SIGNATURE"
+        fi
+
+    - name: 🎯 Classic Token Replacement - Own Signature Method
+      run: |
+        echo "🔄 Starting token replacement with own signature..."
+        
+        # Load tokens
+        source apatch_tokens.env
+        
+        # Decompile APK
+        echo "📦 Decompiling APK..."
+        apktool d original-apatch.apk -o decompiled_apk
+        
+        echo "🎯 Token replacement:"
+        echo "FROM: $APATCH_REAL_SIGNATURE"
+        echo "TO:   $OWN_SIGNATURE"
+        echo "FROM: $APATCH_CODE_SIGNATURE"  
+        echo "TO:   $OWN_SIGNATURE"
+        echo "PACKAGE: $APATCH_PACKAGE_NAME → $APATCH_PACKAGE_NAME.classic"
+        
+        # Replace signatures with own signature
+        find decompiled_apk -name "*.smali" -type f -exec sed -i "s|$APATCH_REAL_SIGNATURE|$OWN_SIGNATURE|g" {} \;
+        find decompiled_apk -name "*.smali" -type f -exec sed -i "s|$APATCH_CODE_SIGNATURE|$OWN_SIGNATURE|g" {} \;
+        
+        # Replace package name to avoid conflicts
+        find decompiled_apk -name "*.smali" -type f -exec sed -i "s|$APATCH_PACKAGE_NAME|$APATCH_PACKAGE_NAME.classic|g" {} \;
+        find decompiled_apk -name "*.xml" -type f -exec sed -i "s|$APATCH_PACKAGE_NAME|$APATCH_PACKAGE_NAME.classic|g" {} \;
+        
+        # Update manifest
+        if [ -f decompiled_apk/AndroidManifest.xml ]; then
+          sed -i "s|package=\"$APATCH_PACKAGE_NAME\"|package=\"$APATCH_PACKAGE_NAME.classic\"|g" decompiled_apk/AndroidManifest.xml
+        fi
+        
+        echo "✅ Token replacement completed"
+
+    - name: 🔨 Recompile Modified APK
+      run: |
+        echo "🔨 Recompiling modified APK..."
+        
+        apktool b decompiled_apk -o unsigned-apatch.apk
+        
+        if [ ! -f unsigned-apatch.apk ]; then
+          echo "❌ APK recompilation failed"
+          exit 1
+        fi
+        
+        echo "✅ APK recompiled: unsigned-apatch.apk"
+
+    - name: 🔐 Sign Modified APK
+      run: |
+        echo "🔐 Signing modified APK with own key..."
+        
+        # Remove old signature
+        zip -d unsigned-apatch.apk 'META-INF/*' || echo "No signature to remove"
+        
+        # Sign with our key
+        jarsigner -verbose \
+          -sigalg SHA256withRSA \
+          -digestalg SHA-256 \
+          -keystore keystore.p12 \
+          -storepass "${{ secrets.KEY_STORE_PASSWORD }}" \
+          -keypass "${{ secrets.KEY_PASSWORD }}" \
+          unsigned-apatch.apk \
+          "${{ secrets.ALIAS }}"
+        
+        # Align APK
+        $ANDROID_HOME/build-tools/34.0.0/zipalign -f -v 4 unsigned-apatch.apk apatch-classic-signed.apk
+        
+        # Verify signature
+        $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose apatch-classic-signed.apk
+        
+        echo "✅ APK signed: apatch-classic-signed.apk"
+
+    - name: 📊 APK Information
+      run: |
+        echo "📊 Final APK information:"
+        echo "📁 Size: $(du -h apatch-classic-signed.apk | cut -f1)"
+        echo "🔐 SHA256: $(sha256sum apatch-classic-signed.apk | cut -d' ' -f1)"
+        
+        echo ""
+        echo "🔍 Signature verification:"
+        $ANDROID_HOME/build-tools/34.0.0/apksigner verify --print-certs apatch-classic-signed.apk
+
+    - name: 📤 Upload Classic APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: apatch-classic-own-signature
+        path: |
+          apatch-classic-signed.apk
+          apatch_tokens.env
+
+    - name: 📋 Build Summary
+      run: |
+        echo "# 🎯 Classic Token Replacement - Own Signature Method" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## ✅ Method: Replace with Own Signature" >> $GITHUB_STEP_SUMMARY
+        echo "- **Source code**: NOT modified ✅" >> $GITHUB_STEP_SUMMARY
+        echo "- **Repository**: Kept clean ✅" >> $GITHUB_STEP_SUMMARY
+        echo "- **Method**: Replace APatch signatures with own signature" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🔄 Process:" >> $GITHUB_STEP_SUMMARY
+        echo "1. Extract original APatch signatures from APK" >> $GITHUB_STEP_SUMMARY
+        echo "2. Generate own signature from keystore" >> $GITHUB_STEP_SUMMARY
+        echo "3. Replace APatch signatures with own signature in smali" >> $GITHUB_STEP_SUMMARY
+        echo "4. Update package name to avoid conflicts" >> $GITHUB_STEP_SUMMARY
+        echo "5. Recompile and sign with same key" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 📱 Result:" >> $GITHUB_STEP_SUMMARY
+        echo "- **APK**: \`apatch-classic-signed.apk\`" >> $GITHUB_STEP_SUMMARY
+        echo "- **Size**: $(du -h apatch-classic-signed.apk | cut -f1)" >> $GITHUB_STEP_SUMMARY
+        echo "- **SHA256**: \`$(sha256sum apatch-classic-signed.apk | cut -d' ' -f1)\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🔐 Replaced tokens:" >> $GITHUB_STEP_SUMMARY
+        if [ -f apatch_tokens.env ]; then
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          cat apatch_tokens.env >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
