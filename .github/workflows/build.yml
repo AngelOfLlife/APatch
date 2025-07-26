@@ -96,14 +96,23 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Upload build artifact
+      - name: Upload build artifact (signed)
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         if: ${{ env.SIGNING_KEY != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: APatch
+          name: APatch-signed
           path: ${{steps.sign_app.outputs.signedReleaseFile}}
+
+      - name: Upload build artifact (unsigned)
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        if: ${{ env.SIGNING_KEY == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: APatch-unsigned
+          path: app/build/outputs/apk/release/*.apk
 
       - name: Post to channel
         if: ${{github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && github.ref_type != 'tag'}}
@@ -122,16 +131,25 @@ jobs:
             curl -v "$URL" -F Release=@${{ steps.sign_app.outputs.signedReleaseFile }}
           fi
 
+      - name: Find APK file for release
+        if: ${{ github.ref_type == 'tag' }}
+        id: find_apk
+        run: |
+          if [ -n "${{ secrets.SIGNING_KEY }}" ] && [ -n "${{ steps.sign_app.outputs.signedReleaseFile }}" ]; then
+            echo "APK_PATH=${{ steps.sign_app.outputs.signedReleaseFile }}" >> $GITHUB_OUTPUT
+          else
+            APK_FILE=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+            echo "APK_PATH=$APK_FILE" >> $GITHUB_OUTPUT
+          fi
+
       - name: Release apk
-        env:
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-        if: ${{ env.SIGNING_KEY != '' && github.ref_type == 'tag' }}
+        if: ${{ github.ref_type == 'tag' }}
         continue-on-error: true
         uses: ncipollo/release-action@v1
         with:
           token: ${{ github.token }}
           tag: ${{ steps.parse_version.outputs.VERSION }}
-          artifacts: ${{steps.sign_app.outputs.signedReleaseFile}}
+          artifacts: ${{ steps.find_apk.outputs.APK_PATH }}
           generateReleaseNotes: true
           makeLatest: true
           replacesArtifacts: true
