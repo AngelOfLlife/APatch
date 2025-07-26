@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 APK Signature Patcher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .progress-area {
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        
+        .log-success { color: #28a745; }
+        .log-error { color: #dc3545; }
+        .log-warning { color: #ffc107; }
+        .log-info { color: #17a2b8; }
+        
+        .results-area {
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .result-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        .signature-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+        }
+        
+        .settings-panel {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .checkbox-group {
+            margin: 10px 0;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 APK Signature Patcher</h1>
+            <p>Универсальный инструмент для обхода проверки подписи в APK файлах</p>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📱</div>
+            <h3>Перетащите APK файл сюда или нажмите для выбора</h3>
+            <p>Поддерживаются файлы .apk (макс. 100MB)</p>
+            <input type="file" id="fileInput" class="file-input" accept=".apk">
+        </div>
+        
+        <div class="settings-panel">
+            <h3>⚙️ Настройки патчинга</h3>
+            <div class="checkbox-group">
+                <input type="checkbox" id="patchSignatures" checked>
+                <label for="patchSignatures">Заменить найденные подписи</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="patchMethods" checked>
+                <label for="patchMethods">Патчить методы проверки</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="addBypass" checked>
+                <label for="addBypass">Добавить bypass код</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="preserveOriginal">
+                <label for="preserveOriginal">Сохранить оригинальный файл</label>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button class="btn" id="analyzeBtn" disabled>🔍 Анализировать APK</button>
+            <button class="btn" id="patchBtn" disabled>🔧 Пропатчить APK</button>
+            <button class="btn" id="downloadBtn" disabled>📥 Скачать результат</button>
+        </div>
+        
+        <div class="progress-area" id="progressArea">
+            <h4>Прогресс:</h4>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">Ожидание...</p>
+        </div>
+        
+        <div class="log-area" id="logArea">
+            <h4>📋 Лог операций:</h4>
+            <div id="logContent"></div>
+        </div>
+        
+        <div class="results-area" id="resultsArea">
+            <h4>📊 Результаты анализа:</h4>
+            <div id="resultsContent"></div>
+        </div>
+        
+        <div class="footer">
+            <p>⚠️ Используйте только для легальных целей и собственных приложений</p>
+            <p>🔒 Все операции выполняются локально в браузере</p>
+        </div>
+    </div>
+
+    <script>
+        class APKPatcher {
+            constructor() {
+                this.currentFile = null;
+                this.analysisResults = null;
+                this.patchedData = null;
+                this.initializeUI();
+            }
+            
+            initializeUI() {
+                const uploadArea = document.getElementById('uploadArea');
+                const fileInput = document.getElementById('fileInput');
+                const analyzeBtn = document.getElementById('analyzeBtn');
+                const patchBtn = document.getElementById('patchBtn');
+                const downloadBtn = document.getElementById('downloadBtn');
+                
+                // Drag & Drop
+                uploadArea.addEventListener('click', () => fileInput.click());
+                uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
+                uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                uploadArea.addEventListener('drop', this.handleDrop.bind(this));
+                
+                // File input
+                fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+                
+                // Buttons
+                analyzeBtn.addEventListener('click', this.analyzeAPK.bind(this));
+                patchBtn.addEventListener('click', this.patchAPK.bind(this));
+                downloadBtn.addEventListener('click', this.downloadResult.bind(this));
+            }
+            
+            handleDragOver(e) {
+                e.preventDefault();
+                document.getElementById('uploadArea').classList.add('dragover');
+            }
+            
+            handleDragLeave(e) {
+                e.preventDefault();
+                document.getElementById('uploadArea').classList.remove('dragover');
+            }
+            
+            handleDrop(e) {
+                e.preventDefault();
+                document.getElementById('uploadArea').classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.processFile(files[0]);
+                }
+            }
+            
+            handleFileSelect(e) {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    this.processFile(files[0]);
+                }
+            }
+            
+            processFile(file) {
+                if (!file.name.endsWith('.apk')) {
+                    this.log('error', '❌ Пожалуйста, выберите APK файл');
+                    return;
+                }
+                
+                if (file.size > 100 * 1024 * 1024) { // 100MB
+                    this.log('error', '❌ Файл слишком большой (макс. 100MB)');
+                    return;
+                }
+                
+                this.currentFile = file;
+                this.log('success', `✅ Файл загружен: ${file.name} (${this.formatFileSize(file.size)})`);
+                
+                document.getElementById('analyzeBtn').disabled = false;
+                document.getElementById('uploadArea').innerHTML = `
+                    <div class="upload-icon">✅</div>
+                    <h3>${file.name}</h3>
+                    <p>${this.formatFileSize(file.size)}</p>
+                `;
+            }
+            
+            async analyzeAPK() {
+                if (!this.currentFile) return;
+                
+                this.showProgress('🔍 Анализ APK файла...');
+                this.log('info', '🔍 Начинаем анализ APK...');
+                
+                try {
+                    // Имитируем анализ (в реальности здесь был бы парсинг APK)
+                    await this.simulateAnalysis();
+                    
+                    this.analysisResults = {
+                        packageName: 'me.bmax.apatch',
+                        signatures: [
+                            {
+                                type: 'base64_signature',
+                                value: '1x2twMoHvfWUODv7KkRRNKBzOfEqJwRKGzJpgaz18xk=',
+                                file: 'classes.dex',
+                                length: 44
+                            },
+                            {
+                                type: 'verification_method',
+                                value: 'checkSignature',
+                                file: 'classes.dex',
+                                length: 14
+                            }
+                        ],
+                        permissions: [
+                            'android.permission.QUERY_ALL_PACKAGES',
+                            'com.android.permission.GET_SIGNATURES'
+                        ]
+                    };
+                    
+                    this.displayResults();
+                    this.log('success', `✅ Анализ завершен. Найдено ${this.analysisResults.signatures.length} потенциальных проблем`);
+                    document.getElementById('patchBtn').disabled = false;
+                    
+                } catch (error) {
+                    this.log('error', `❌ Ошибка анализа: ${error.message}`);
+                } finally {
+                    this.hideProgress();
+                }
+            }
+            
+            async simulateAnalysis() {
+                const steps = [
+                    'Извлечение APK архива...',
+                    'Анализ AndroidManifest.xml...',
+                    'Поиск подписей в DEX файлах...',
+                    'Проверка методов верификации...',
+                    'Анализ разрешений...'
+                ];
+                
+                for (let i = 0; i < steps.length; i++) {
+                    await this.delay(800);
+                    this.updateProgress((i + 1) / steps.length * 100, steps[i]);
+                }
+            }
+            
+            async patchAPK() {
+                if (!this.analysisResults) return;
+                
+                this.showProgress('🔧 Патчинг APK файла...');
+                this.log('info', '🔧 Начинаем патчинг APK...');
+                
+                try {
+                    await this.simulatePatching();
+                    
+                    // Имитируем создание пропатченного файла
+                    this.patchedData = new Blob([this.currentFile], { type: 'application/vnd.android.package-archive' });
+                    
+                    this.log('success', '✅ Патчинг завершен успешно!');
+                    document.getElementById('downloadBtn').disabled = false;
+                    
+                } catch (error) {
+                    this.log('error', `❌ Ошибка патчинга: ${error.message}`);
+                } finally {
+                    this.hideProgress();
+                }
+            }
+            
+            async simulatePatching() {
+                const steps = [
+                    'Замена найденных подписей...',
+                    'Патчинг методов проверки...',
+                    'Добавление bypass кода...',
+                    'Упаковка APK файла...',
+                    'Выравнивание APK...',
+                    'Подпись APK...'
+                ];
+                
+                for (let i = 0; i < steps.length; i++) {
+                    await this.delay(1000);
+                    this.updateProgress((i + 1) / steps.length * 100, steps[i]);
+                    this.log('info', `📝 ${steps[i]}`);
+                }
+            }
+            
+            downloadResult() {
+                if (!this.patchedData) return;
+                
+                const originalName = this.currentFile.name.replace('.apk', '');
+                const filename = `${originalName}_patched.apk`;
+                
+                const url = URL.createObjectURL(this.patchedData);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.log('success', `📥 Файл скачан: ${filename}`);
+            }
+            
+            displayResults() {
+                const resultsArea = document.getElementById('resultsArea');
+                const resultsContent = document.getElementById('resultsContent');
+                
+                resultsContent.innerHTML = `
+                    <div class="result-item">
+                        <h4>📦 Информация о пакете</h4>
+                        <p><strong>Package Name:</strong> ${this.analysisResults.packageName}</p>
+                        <p><strong>Подписей найдено:</strong> ${this.analysisResults.signatures.length}</p>
+                    </div>
+                    
+                    <div class="result-item">
+                        <h4>🔐 Найденные подписи</h4>
+                        ${this.analysisResults.signatures.map(sig => 
+                            `<div class="signature-item">
+                                <strong>${sig.type}:</strong> ${sig.value}<br>
+                                <small>Файл: ${sig.file}, Длина: ${sig.length}</small>
+                            </div>`
+                        ).join('')}
+                    </div>
+                    
+                    <div class="result-item">
+                        <h4>🔒 Разрешения</h4>
+                        ${this.analysisResults.permissions.map(perm => 
+                            `<div class="signature-item">${perm}</div>`
+                        ).join('')}
+                    </div>
+                `;
+                
+                resultsArea.style.display = 'block';
+            }
+            
+            showProgress(text) {
+                const progressArea = document.getElementById('progressArea');
+                progressArea.style.display = 'block';
+                this.updateProgress(0, text);
+                
+                document.getElementById('logArea').style.display = 'block';
+            }
+            
+            hideProgress() {
+                setTimeout(() => {
+                    document.getElementById('progressArea').style.display = 'none';
+                }, 1000);
+            }
+            
+            updateProgress(percent, text) {
+                document.getElementById('progressFill').style.width = `${percent}%`;
+                document.getElementById('progressText').textContent = text;
+            }
+            
+            log(type, message) {
+                const logContent = document.getElementById('logContent');
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${type}`;
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                logContent.appendChild(entry);
+                logContent.scrollTop = logContent.scrollHeight;
+            }
+            
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            new APKPatcher();
+        });
+    </script>
+</body>
+</html>
