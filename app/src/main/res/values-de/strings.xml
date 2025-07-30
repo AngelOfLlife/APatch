@@ -209,4 +209,13 @@
     <string name="crash_handle_copy">Absturzprotokoll kopieren</string>
     <string name="crash_handle_copied">Absturzprotokoll in die Zwischenablage kopiert.</string>
     <string name="crash_handle_title">App ist abgestürzt…</string>
+
+    <!-- Background Image Settings -->
+    <string name="settings_custom_background">Benutzerdefinierter App-Hintergrund</string>
+    <string name="settings_custom_background_summary">Wählen Sie ein Bild als Hintergrund</string>
+    <string name="settings_card_alpha">Interface-Transparenz</string>
+    <string name="settings_card_dim">Hintergrund-Helligkeit</string>
+    <string name="background_set_success">Hintergrund erfolgreich gesetzt</string>
+    <string name="background_removed">Benutzerdefinierte Hintergründe entfernt</string>
+    <string name="image_editor_instructions">Verwenden Sie zwei Finger zum Zoomen des Bildes und einen Finger zum Ändern der Position</string>
 </resources>

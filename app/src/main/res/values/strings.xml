@@ -248,4 +248,13 @@
     <string name="settings_lite_mode_mode_summary">APModule functions may exhibit failures after being enabled, but in some cases they can still effectively avoid detection. Reboot required.</string>
     <string name="settings_force_overlayfs_mode">Force use of OverlayFS</string>
     <string name="settings_force_overlayfs_mode_summary">Use OverlayFS to mount APModules instead of Magic Mount when kernel support is available. Reboot required.</string>
+
+    <!-- Background Image Settings -->
+    <string name="settings_custom_background">Custom App Background</string>
+    <string name="settings_custom_background_summary">Select an image as background</string>
+    <string name="settings_card_alpha">Interface transparency</string>
+    <string name="settings_card_dim">Background brightness</string>
+    <string name="background_set_success">Background set successfully</string>
+    <string name="background_removed">Removed custom backgrounds</string>
+    <string name="image_editor_instructions">Use two fingers to zoom the image, and one finger to change the position</string>
 </resources>

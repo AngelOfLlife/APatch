@@ -1,6 +1,7 @@
 package me.bmax.apatch.ui.screen
 
 import android.content.Intent
+import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.widget.Toast
@@ -107,6 +108,37 @@ import me.bmax.apatch.util.setLiteMode
 import me.bmax.apatch.util.ui.APDialogBlurBehindUtils
 import me.bmax.apatch.util.ui.LocalSnackbarHost
 import me.bmax.apatch.util.ui.NavigationBarsSpacer
+import me.bmax.apatch.util.ui.saveCustomBackground
+import me.bmax.apatch.ui.theme.CardConfig
+import me.bmax.apatch.ui.theme.ThemeConfig
+import me.bmax.apatch.ui.component.ImageEditorDialog
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Opacity
+import androidx.compose.material.icons.filled.Wallpaper
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -433,6 +465,196 @@ fun SettingScreen() {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline)
             }, leadingContent = { Icon(Icons.Filled.Translate, null) })
+
+            // Background Image Settings
+            val pickImageLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.GetContent()
+            ) { uri: Uri? ->
+                if (uri != null) {
+                    context.saveCustomBackground(uri)
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.background_set_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            var showImageEditor by remember { mutableStateOf(false) }
+            var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+            if (showImageEditor && selectedImageUri != null) {
+                ImageEditorDialog(
+                    imageUri = selectedImageUri!!,
+                    onDismiss = { showImageEditor = false },
+                    onConfirm = { transformedUri ->
+                        context.saveCustomBackground(transformedUri)
+                        showImageEditor = false
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.background_set_success),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                )
+            }
+
+            // Custom Background Switch
+            var isCustomBackgroundEnabled by rememberSaveable {
+                mutableStateOf(CardConfig.isCustomBackgroundEnabled)
+            }
+
+            SwitchItem(
+                icon = Icons.Filled.Wallpaper,
+                title = stringResource(id = R.string.settings_custom_background),
+                summary = stringResource(id = R.string.settings_custom_background_summary),
+                checked = isCustomBackgroundEnabled,
+                onCheckedChange = { isChecked ->
+                    if (isChecked) {
+                        pickImageLauncher.launch("image/*")
+                    } else {
+                        context.saveCustomBackground(null)
+                        isCustomBackgroundEnabled = false
+                        CardConfig.cardAlpha = 1f
+                        CardConfig.cardDim = 0f
+                        CardConfig.isCustomAlphaSet = false
+                        CardConfig.isCustomDimSet = false
+                        CardConfig.isCustomBackgroundEnabled = false
+                        CardConfig.save(context)
+
+                        // Reset other related settings
+                        ThemeConfig.needsResetOnThemeChange = true
+                        ThemeConfig.preventBackgroundRefresh = false
+
+                        context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE)
+                            .edit {
+                                putBoolean(
+                                    "prevent_background_refresh",
+                                    false
+                                )
+                            }
+
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.background_removed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            )
+
+            // Transparency and Brightness Sliders
+            AnimatedVisibility(
+                visible = ThemeConfig.customBackgroundUri != null,
+                enter = fadeIn() + slideInVertically(),
+                exit = fadeOut() + slideOutVertically()
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    // Transparency Slider
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.Opacity,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.settings_card_alpha),
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "${(CardConfig.cardAlpha * 100).roundToInt()}%",
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+
+                    val alphaSliderValue by animateFloatAsState(
+                        targetValue = CardConfig.cardAlpha,
+                        label = "Alpha Slider Animation"
+                    )
+
+                    Slider(
+                        value = alphaSliderValue,
+                        onValueChange = { newValue ->
+                            CardConfig.cardAlpha = newValue
+                            CardConfig.isCustomAlphaSet = true
+                            prefs.edit {
+                                putBoolean("is_custom_alpha_set", true)
+                                putFloat("card_alpha", newValue)
+                            }
+                        },
+                        onValueChangeFinished = {
+                            scope.launch(Dispatchers.IO) {
+                                CardConfig.save(context)
+                            }
+                        },
+                        valueRange = 0f..1f,
+                        steps = 20,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+
+                    // Brightness Slider
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
+                    ) {
+                        Icon(
+                            Icons.Filled.LightMode,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.settings_card_dim),
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "${(CardConfig.cardDim * 100).roundToInt()}%",
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    }
+
+                    val dimSliderValue by animateFloatAsState(
+                        targetValue = CardConfig.cardDim,
+                        label = "Dim Slider Animation"
+                    )
+
+                    Slider(
+                        value = dimSliderValue,
+                        onValueChange = { newValue ->
+                            CardConfig.cardDim = newValue
+                            CardConfig.isCustomDimSet = true
+                            prefs.edit {
+                                putBoolean("is_custom_dim_set", true)
+                                putFloat("card_dim", newValue)
+                            }
+                        },
+                        onValueChangeFinished = {
+                            scope.launch(Dispatchers.IO) {
+                                CardConfig.save(context)
+                            }
+                        },
+                        valueRange = 0f..1f,
+                        steps = 20,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                }
+            }
 
             // log
             ListItem(

@@ -209,4 +209,13 @@
     <string name="crash_handle_title">L\'application a planté…</string>
     <string name="crash_handle_copy">Copier le rapport de plantage</string>
     <string name="crash_handle_copied">Rapport de plantage copié dans le presse-papiers.</string>
+
+    <!-- Background Image Settings -->
+    <string name="settings_custom_background">Arrière-plan personnalisé de l\'application</string>
+    <string name="settings_custom_background_summary">Sélectionner une image comme arrière-plan</string>
+    <string name="settings_card_alpha">Transparence de l\'interface</string>
+    <string name="settings_card_dim">Luminosité de l\'arrière-plan</string>
+    <string name="background_set_success">Arrière-plan défini avec succès</string>
+    <string name="background_removed">Arrière-plans personnalisés supprimés</string>
+    <string name="image_editor_instructions">Utilisez deux doigts pour zoomer l\'image et un doigt pour changer la position</string>
 </resources>

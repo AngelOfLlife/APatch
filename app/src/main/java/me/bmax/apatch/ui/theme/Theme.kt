@@ -20,6 +20,25 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.MutableLiveData
 import me.bmax.apatch.APApplication
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.paint
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.zIndex
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
+import androidx.core.net.toUri
+import me.bmax.apatch.util.ui.loadCustomBackground
+import androidx.compose.foundation.background
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 private fun SystemBarStyle(
@@ -57,6 +76,12 @@ fun APatchTheme(
 ) {
     val context = LocalContext.current
     val prefs = APApplication.sharedPreferences
+
+    // 加载卡片配置
+    LaunchedEffect(Unit) {
+        CardConfig.load(context)
+        context.loadCustomBackground()
+    }
 
     var darkThemeFollowSys by remember {
         mutableStateOf(
@@ -166,7 +191,48 @@ fun APatchTheme(
         darkMode = darkTheme
     )
 
-    MaterialTheme(
-        colorScheme = colorScheme, typography = Typography, content = content
-    )
+    // 背景图像支持
+    val bgImagePainter = ThemeConfig.customBackgroundUri?.let {
+        rememberAsyncImagePainter(
+            model = it,
+            onSuccess = {
+                ThemeConfig.backgroundImageLoaded = true
+            }
+        )
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // 背景图像
+        if (bgImagePainter != null && ThemeConfig.backgroundImageLoaded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = CardConfig.cardDim),
+                                Color.Black.copy(alpha = CardConfig.cardDim)
+                            )
+                        )
+                    )
+                    .zIndex(-1f)
+            ) {
+                androidx.compose.foundation.Image(
+                    painter = bgImagePainter,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+
+        // 主要内容
+        MaterialTheme(
+            colorScheme = colorScheme, 
+            typography = Typography, 
+            content = content
+        )
+    }
 }

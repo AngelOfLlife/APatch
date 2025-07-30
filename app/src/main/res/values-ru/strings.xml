@@ -207,4 +207,13 @@
     <string name="crash_handle_copied">Журнал сбоев скопирован в буфер обмена.</string>
     <string name="log_saved">Логи сохранены</string>
     <string name="crash_handle_title">Сбой приложения…</string>
+
+    <!-- Background Image Settings -->
+    <string name="settings_custom_background">Пользовательский фон приложения</string>
+    <string name="settings_custom_background_summary">Выберите изображение в качестве фона</string>
+    <string name="settings_card_alpha">Прозрачность интерфейса</string>
+    <string name="settings_card_dim">Яркость фона</string>
+    <string name="background_set_success">Фон успешно установлен</string>
+    <string name="background_removed">Пользовательские фоны удалены</string>
+    <string name="image_editor_instructions">Используйте два пальца для увеличения изображения, и один палец для изменения положения</string>
 </resources>

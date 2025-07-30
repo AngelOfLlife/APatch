@@ -215,4 +215,13 @@
     <string name="settings_lite_mode_mode_summary">开启后会使系统模块功能接近破损，但有时可以有效地规避检测，重启生效。</string>
     <string name="settings_force_overlayfs_mode">强制使用 OverlayFS</string>
     <string name="settings_force_overlayfs_mode_summary">在内核支持的前提下使用 OverlayFS 挂载系统模块而非 Magic Mount，重启生效。</string>
+
+    <!-- Background Image Settings -->
+    <string name="settings_custom_background">自定义应用背景</string>
+    <string name="settings_custom_background_summary">选择图片作为背景</string>
+    <string name="settings_card_alpha">界面透明度</string>
+    <string name="settings_card_dim">背景亮度</string>
+    <string name="background_set_success">背景设置成功</string>
+    <string name="background_removed">已移除自定义背景</string>
+    <string name="image_editor_instructions">使用两个手指缩放图片，一个手指改变位置</string>
 </resources>
