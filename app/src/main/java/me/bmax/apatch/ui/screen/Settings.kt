@@ -127,7 +127,6 @@ import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
