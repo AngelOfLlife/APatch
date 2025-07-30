@@ -32,7 +32,7 @@ import me.bmax.apatch.util.ui.saveTransformedBackground
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.layout.onSizeChanged
 import kotlin.math.max
 
@@ -50,8 +50,8 @@ fun ImageEditorDialog(
     var lastScale by remember { mutableFloatStateOf(1f) }
     var lastOffsetX by remember { mutableFloatStateOf(0f) }
     var lastOffsetY by remember { mutableFloatStateOf(0f) }
-    var imageSize by remember { mutableStateOf(Size.Zero) }
-    var screenSize by remember { mutableStateOf(Size.Zero) }
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+    var screenSize by remember { mutableStateOf(IntSize.Zero) }
     val animatedScale by animateFloatAsState(
         targetValue = scale,
         label = "ScaleAnimation"
@@ -82,7 +82,7 @@ fun ImageEditorDialog(
     val scaleToFullScreen = remember {
         {
             if (imageSize.height > 0 && screenSize.height > 0) {
-                val newScale = screenSize.height / imageSize.height
+                val newScale = screenSize.height.toFloat() / imageSize.height.toFloat()
                 updateTransformation(newScale, 0f, 0f)
             }
         }
@@ -190,7 +190,7 @@ fun ImageEditorDialog(
                 )
             }
 
-            // 底部 инструкции
+            // 底部指令
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
