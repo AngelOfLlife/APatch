@@ -38,6 +38,20 @@
     <string name="log_saved">Logs saved</string>
     <string name="safe_mode">Safe mode</string>
 
+    <!-- UI Customization strings -->
+    <string name="ui_customization">UI Customization</string>
+    <string name="ui_background_image">Background Image</string>
+    <string name="ui_background_image_summary">Set custom background image for the interface</string>
+    <string name="ui_interface_transparency">Interface Transparency</string>
+    <string name="ui_interface_transparency_summary">Adjust transparency of all UI elements</string>
+    <string name="ui_background_brightness">Background Brightness</string>
+    <string name="ui_background_brightness_summary">Control background image brightness</string>
+    <string name="ui_remove_image">Remove Image</string>
+    <string name="ui_select_image">Select Image</string>
+    <string name="ui_image_removed">Image Removed</string>
+    <string name="ui_scale_position">Scale & Position</string>
+    <string name="ui_reset_scale_position">Reset Scale & Position</string>
+
     <string name="super_key">SuperKey</string>
     <string name="clear_super_key">Clear SuperKey</string>
     <string name="patch_set_superkey">Set SuperKey</string>
