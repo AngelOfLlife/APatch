@@ -207,4 +207,17 @@
     <string name="crash_handle_copied">Журнал сбоев скопирован в буфер обмена.</string>
     <string name="log_saved">Логи сохранены</string>
     <string name="crash_handle_title">Сбой приложения…</string>
+    
+    <!-- UI Customization strings -->
+    <string name="ui_customization">Кастомизация UI</string>
+    <string name="ui_background_image">Фоновое изображение</string>
+    <string name="ui_background_image_summary">Установить пользовательское фоновое изображение для интерфейса</string>
+    <string name="ui_interface_transparency">Прозрачность интерфейса</string>
+    <string name="ui_interface_transparency_summary">Настроить прозрачность всех элементов UI</string>
+    <string name="ui_background_brightness">Яркость фона</string>
+    <string name="ui_background_brightness_summary">Настроить яркость фонового изображения</string>
+    <string name="ui_choose_background_image">Выбрать фоновое изображение</string>
+    <string name="ui_remove_background_image">Удалить фоновое изображение</string>
+    <string name="ui_scale_and_position">Масштаб и позиция</string>
+    <string name="ui_reset_scale_position">Сбросить масштаб и позицию</string>
 </resources>

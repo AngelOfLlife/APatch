@@ -209,4 +209,30 @@
     <string name="crash_handle_copy">クラッシュログをコピー</string>
     <string name="crash_handle_copied">クラッシュ ログをクリップボードにコピーしました。</string>
     <string name="crash_handle_title">アプリがクラッシュしました。</string>
+    
+    <!-- UI Customization strings -->
+    <string name="ui_customization">UIカスタマイズ</string>
+    <string name="ui_background_image">背景画像</string>
+    <string name="ui_background_image_summary">インターフェース用のカスタム背景画像を設定</string>
+    <string name="ui_interface_transparency">インターフェースの透明度</string>
+    <string name="ui_interface_transparency_summary">全てのUI要素の透明度を調整</string>
+    <string name="ui_background_brightness">背景の明度</string>
+    <string name="ui_background_brightness_summary">背景画像の明度を調整</string>
+    <string name="ui_choose_background_image">背景画像を選択</string>
+    <string name="ui_remove_background_image">背景画像を削除</string>
+    <string name="ui_scale_and_position">スケールと位置</string>
+    <string name="ui_reset_scale_position">スケールと位置をリセット</string>
+    
+    <!-- UI Customization strings -->
+    <string name="ui_customization">UIカスタマイズ</string>
+    <string name="ui_background_image">背景画像</string>
+    <string name="ui_background_image_summary">インターフェース用のカスタム背景画像を設定</string>
+    <string name="ui_interface_transparency">インターフェースの透明度</string>
+    <string name="ui_interface_transparency_summary">全てのUI要素の透明度を調整</string>
+    <string name="ui_background_brightness">背景の明度</string>
+    <string name="ui_background_brightness_summary">背景画像の明度を調整</string>
+    <string name="ui_choose_background_image">背景画像を選択</string>
+    <string name="ui_remove_background_image">背景画像を削除</string>
+    <string name="ui_scale_and_position">スケールと位置</string>
+    <string name="ui_reset_scale_position">スケールと位置をリセット</string>
 </resources>

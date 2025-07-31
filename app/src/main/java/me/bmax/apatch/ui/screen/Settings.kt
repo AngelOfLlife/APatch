@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,6 +42,9 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.Wallpaper
+import androidx.compose.material.icons.filled.Opacity
+import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -60,6 +64,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -90,6 +95,8 @@ import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.Natives
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.SwitchItem
+import me.bmax.apatch.ui.component.SliderItem
+import me.bmax.apatch.ui.component.BackgroundImageItem
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.theme.refreshTheme
@@ -403,6 +410,62 @@ fun SettingScreen() {
                     )
                 }, leadingContent = { Icon(Icons.Filled.FormatColorFill, null) })
             }
+
+            // UI Customization Section
+            Spacer(modifier = Modifier.padding(top = 16.dp))
+            
+            // Background Image Selection
+            var backgroundImageUri by rememberSaveable {
+                mutableStateOf(prefs.getString("background_image_uri", ""))
+            }
+            BackgroundImageItem(
+                icon = Icons.Filled.Wallpaper,
+                title = stringResource(id = R.string.ui_background_image),
+                summary = stringResource(id = R.string.ui_background_image_summary),
+                currentImageUri = backgroundImageUri,
+                onImageSelected = { uri ->
+                    prefs.edit { putString("background_image_uri", uri) }
+                    backgroundImageUri = uri
+                },
+                onImageRemoved = {
+                    prefs.edit { putString("background_image_uri", "") }
+                    backgroundImageUri = ""
+                }
+            )
+
+            // Interface Transparency
+            var transparencyValue by rememberSaveable {
+                mutableFloatStateOf(prefs.getFloat("interface_transparency", 1.0f))
+            }
+            SliderItem(
+                icon = Icons.Filled.Opacity,
+                title = stringResource(id = R.string.ui_interface_transparency),
+                summary = stringResource(id = R.string.ui_interface_transparency_summary),
+                value = transparencyValue,
+                onValueChange = { value ->
+                    prefs.edit { putFloat("interface_transparency", value) }
+                    transparencyValue = value
+                },
+                valueRange = 0.1f..1.0f,
+                steps = 18 // 20 points total including start and end
+            )
+
+            // Background Brightness
+            var brightnessValue by rememberSaveable {
+                mutableFloatStateOf(prefs.getFloat("background_brightness", 1.0f))
+            }
+            SliderItem(
+                icon = Icons.Filled.Brightness6,
+                title = stringResource(id = R.string.ui_background_brightness),
+                summary = stringResource(id = R.string.ui_background_brightness_summary),
+                value = brightnessValue,
+                onValueChange = { value ->
+                    prefs.edit { putFloat("background_brightness", value) }
+                    brightnessValue = value
+                },
+                valueRange = 0.1f..1.0f,
+                steps = 18 // 20 points total including start and end
+            )
 
             // su path
             if (kPatchReady) {

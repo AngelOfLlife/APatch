@@ -209,4 +209,17 @@
     <string name="crash_handle_copy">Absturzprotokoll kopieren</string>
     <string name="crash_handle_copied">Absturzprotokoll in die Zwischenablage kopiert.</string>
     <string name="crash_handle_title">App ist abgestürzt…</string>
+    
+    <!-- UI Customization strings -->
+    <string name="ui_customization">UI Customization</string>
+    <string name="ui_background_image">Background Image</string>
+    <string name="ui_background_image_summary">Set custom background image for interface</string>
+    <string name="ui_interface_transparency">Interface Transparency</string>
+    <string name="ui_interface_transparency_summary">Adjust transparency of all UI elements</string>
+    <string name="ui_background_brightness">Background Brightness</string>
+    <string name="ui_background_brightness_summary">Adjust brightness of background image</string>
+    <string name="ui_choose_background_image">Choose Background Image</string>
+    <string name="ui_remove_background_image">Remove Background Image</string>
+    <string name="ui_scale_and_position">Scale and Position</string>
+    <string name="ui_reset_scale_position">Reset Scale and Position</string>
 </resources>

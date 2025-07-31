@@ -209,4 +209,17 @@
     <string name="crash_handle_copy">충돌 로그 복사</string>
     <string name="apm_action">동작</string>
     <string name="crash_handle_copied">충돌 로그가 클립보드에 복사됨.</string>
+    
+    <!-- UI Customization strings -->
+    <string name="ui_customization">UI 사용자 정의</string>
+    <string name="ui_background_image">배경 이미지</string>
+    <string name="ui_background_image_summary">인터페이스용 사용자 정의 배경 이미지 설정</string>
+    <string name="ui_interface_transparency">인터페이스 투명도</string>
+    <string name="ui_interface_transparency_summary">모든 UI 요소의 투명도 조정</string>
+    <string name="ui_background_brightness">배경 밝기</string>
+    <string name="ui_background_brightness_summary">배경 이미지의 밝기 조정</string>
+    <string name="ui_choose_background_image">배경 이미지 선택</string>
+    <string name="ui_remove_background_image">배경 이미지 제거</string>
+    <string name="ui_scale_and_position">크기 및 위치</string>
+    <string name="ui_reset_scale_position">크기 및 위치 재설정</string>
 </resources>
