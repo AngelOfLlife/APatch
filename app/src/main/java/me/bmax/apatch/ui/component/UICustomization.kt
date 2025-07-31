@@ -285,30 +285,3 @@ fun BackgroundImageItem(
     )
 }
 
-@Composable
-fun SwitchItem(
-    icon: ImageVector,
-    title: String,
-    summary: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    ListItem(
-        modifier = modifier.clickable { onCheckedChange(!checked) },
-        headlineContent = { Text(title) },
-        supportingContent = { Text(summary) },
-        leadingContent = {
-            Icon(
-                imageVector = icon,
-                contentDescription = title
-            )
-        },
-        trailingContent = {
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange
-            )
-        }
-    )
-}
