@@ -55,9 +55,14 @@ object UICustomizationManager {
     fun createBrightnessColorFilter(brightness: Float): ColorFilter? {
         if (brightness >= 0.99f) return null
         
-        val matrix = ColorMatrix().apply {
-            setScale(brightness, brightness, brightness, 1f)
-        }
+        val matrix = ColorMatrix(
+            floatArrayOf(
+                brightness, 0f, 0f, 0f, 0f,
+                0f, brightness, 0f, 0f, 0f,
+                0f, 0f, brightness, 0f, 0f,
+                0f, 0f, 0f, 1f, 0f
+            )
+        )
         return ColorFilter.colorMatrix(matrix)
     }
 

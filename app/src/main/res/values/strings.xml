@@ -50,7 +50,10 @@
     <string name="ui_select_image">Select Image</string>
     <string name="ui_image_removed">Image Removed</string>
     <string name="ui_scale_position">Scale &amp; Position</string>
+    <string name="ui_scale_and_position">Scale &amp; Position</string>
     <string name="ui_reset_scale_position">Reset Scale &amp; Position</string>
+    <string name="ui_choose_background_image">Choose Background Image</string>
+    <string name="ui_remove_background_image">Remove Background Image</string>
     <string name="ui_preview">Preview</string>
     <string name="ui_interface_preview">Interface Preview</string>
     <string name="ui_advanced_controls">Advanced Controls</string>
