@@ -228,8 +228,8 @@ private fun AppItem(
             title = stringResource(id = R.string.su_pkg_excluded_setting_title),
             summary = stringResource(id = R.string.su_pkg_excluded_setting_summary),
             checked = excludeApp == 1,
-            onCheckedChange = {
-                if (it) {
+            onCheckedChange = { isChecked ->
+                if (isChecked) {
                     excludeApp = 1
                     config.allow = 0
                     config.profile.scontext = APApplication.DEFAULT_SCONTEXT

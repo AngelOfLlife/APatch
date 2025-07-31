@@ -240,8 +240,8 @@ fun SettingScreen() {
                 title = stringResource(id = R.string.settings_donot_store_superkey),
                 summary = stringResource(id = R.string.settings_donot_store_superkey_summary),
                 checked = bSkipStoreSuperKey,
-                onCheckedChange = {
-                    bSkipStoreSuperKey = it
+                onCheckedChange = { isChecked ->
+                    bSkipStoreSuperKey = isChecked
                     APatchKeyHelper.setShouldSkipStoreSuperKey(bSkipStoreSuperKey)
                 })
 
@@ -252,7 +252,7 @@ fun SettingScreen() {
                     title = stringResource(id = R.string.settings_global_namespace_mode),
                     summary = stringResource(id = R.string.settings_global_namespace_mode_summary),
                     checked = isGlobalNamespaceEnabled,
-                    onCheckedChange = {
+                    onCheckedChange = { isChecked ->
                         setGlobalNamespaceEnabled(
                             if (isGlobalNamespaceEnabled) {
                                 "0"
@@ -260,7 +260,7 @@ fun SettingScreen() {
                                 "1"
                             }
                         )
-                        isGlobalNamespaceEnabled = it
+                        isGlobalNamespaceEnabled = isChecked
                     })
             }
 
@@ -271,9 +271,9 @@ fun SettingScreen() {
                     title = stringResource(id = R.string.settings_lite_mode),
                     summary = stringResource(id = R.string.settings_lite_mode_mode_summary),
                     checked = isLiteModeEnabled,
-                    onCheckedChange = {
-                        setLiteMode(it)
-                        isLiteModeEnabled = it
+                    onCheckedChange = { isChecked ->
+                        setLiteMode(isChecked)
+                        isLiteModeEnabled = isChecked
                     })
             }
 
@@ -284,9 +284,9 @@ fun SettingScreen() {
                     title = stringResource(id = R.string.settings_force_overlayfs_mode),
                     summary = stringResource(id = R.string.settings_force_overlayfs_mode_summary),
                     checked = forceUsingOverlayFS,
-                    onCheckedChange = {
-                        setForceUsingOverlayFS(it)
-                        forceUsingOverlayFS = it
+                    onCheckedChange = { isChecked ->
+                        setForceUsingOverlayFS(isChecked)
+                        forceUsingOverlayFS = isChecked
                     })
             }
 
@@ -411,20 +411,22 @@ fun SettingScreen() {
                 }, leadingContent = { Icon(Icons.Filled.FormatColorFill, null) })
             }
 
-            // UI Customization Section - Temporarily disabled for compilation
-            // This section will be re-enabled after resolving component conflicts
-            // Features planned: Background image selection, transparency slider, brightness control
+            // UI Customization Section
+            Spacer(modifier = Modifier.padding(top = 16.dp))
             
-            // Placeholder for UI customization features
+            // UI Customization placeholder using existing components
             ListItem(
                 headlineContent = {
-                    Text(text = "UI Customization (Coming Soon)")
+                    Text(text = stringResource(id = R.string.ui_customization))
                 },
                 supportingContent = {
-                    Text(text = "Background images, transparency, and brightness controls will be available in a future update")
+                    Text(text = stringResource(id = R.string.ui_background_image_summary))
                 },
                 leadingContent = {
                     Icon(Icons.Filled.Wallpaper, contentDescription = "UI Customization")
+                },
+                modifier = Modifier.clickable {
+                    // TODO: Open UI customization dialog
                 }
             )
 
