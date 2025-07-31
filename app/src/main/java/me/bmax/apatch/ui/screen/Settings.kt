@@ -95,8 +95,8 @@ import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.Natives
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.SwitchItem
-// import me.bmax.apatch.ui.component.SliderItem
-// import me.bmax.apatch.ui.component.BackgroundImageItem
+import me.bmax.apatch.ui.component.CustomSliderItem
+import me.bmax.apatch.ui.component.CustomBackgroundImageItem
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.theme.refreshTheme
@@ -414,20 +414,60 @@ fun SettingScreen() {
             // UI Customization Section
             Spacer(modifier = Modifier.padding(top = 16.dp))
             
-            // UI Customization placeholder using existing components
-            ListItem(
-                headlineContent = {
-                    Text(text = stringResource(id = R.string.ui_customization))
+            // Background Image Selection
+            var backgroundImageUri by rememberSaveable {
+                mutableStateOf(prefs.getString("background_image_uri", "") ?: "")
+            }
+            
+            CustomBackgroundImageItem(
+                icon = Icons.Filled.Wallpaper,
+                title = stringResource(id = R.string.ui_background_image),
+                summary = stringResource(id = R.string.ui_background_image_summary),
+                backgroundImageUri = backgroundImageUri.takeIf { it.isNotEmpty() },
+                onImageSelected = { uri ->
+                    prefs.edit { putString("background_image_uri", uri) }
+                    backgroundImageUri = uri
                 },
-                supportingContent = {
-                    Text(text = stringResource(id = R.string.ui_background_image_summary))
-                },
-                leadingContent = {
-                    Icon(Icons.Filled.Wallpaper, contentDescription = "UI Customization")
-                },
-                modifier = Modifier.clickable {
-                    // TODO: Open UI customization dialog
+                onImageRemoved = {
+                    prefs.edit { putString("background_image_uri", "") }
+                    backgroundImageUri = ""
                 }
+            )
+
+            // Interface Transparency
+            var transparencyValue by rememberSaveable {
+                mutableFloatStateOf(prefs.getFloat("interface_transparency", 1.0f))
+            }
+            
+            CustomSliderItem(
+                icon = Icons.Filled.Opacity,
+                title = stringResource(id = R.string.ui_interface_transparency),
+                summary = stringResource(id = R.string.ui_interface_transparency_summary),
+                value = transparencyValue,
+                onValueChange = { value ->
+                    prefs.edit { putFloat("interface_transparency", value) }
+                    transparencyValue = value
+                },
+                valueRange = 0.1f..1.0f,
+                steps = 18 // 20 точек всего включая начало и конец
+            )
+
+            // Background Brightness
+            var brightnessValue by rememberSaveable {
+                mutableFloatStateOf(prefs.getFloat("background_brightness", 1.0f))
+            }
+            
+            CustomSliderItem(
+                icon = Icons.Filled.Brightness6,
+                title = stringResource(id = R.string.ui_background_brightness),
+                summary = stringResource(id = R.string.ui_background_brightness_summary),
+                value = brightnessValue,
+                onValueChange = { value ->
+                    prefs.edit { putFloat("background_brightness", value) }
+                    brightnessValue = value
+                },
+                valueRange = 0.1f..1.0f,
+                steps = 18 // 20 точек всего включая начало и конец
             )
 
             // su path
