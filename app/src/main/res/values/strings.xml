@@ -49,8 +49,8 @@
     <string name="ui_remove_image">Remove Image</string>
     <string name="ui_select_image">Select Image</string>
     <string name="ui_image_removed">Image Removed</string>
-    <string name="ui_scale_position">Scale & Position</string>
-    <string name="ui_reset_scale_position">Reset Scale & Position</string>
+    <string name="ui_scale_position">Scale &amp; Position</string>
+    <string name="ui_reset_scale_position">Reset Scale &amp; Position</string>
 
     <string name="super_key">SuperKey</string>
     <string name="clear_super_key">Clear SuperKey</string>
