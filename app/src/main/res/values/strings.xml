@@ -142,14 +142,14 @@
 
     <string name="apm">APModule</string>
     <string name="apm_not_installed">AndroidPatch not installed</string>
-    <string name="apm_failed_to_enable">Couldn&apos;t turn on the "%s" module</string>
-    <string name="apm_failed_to_disable">Couldn&apos;t turn off the "%s" module</string>
+    <string name="apm_failed_to_enable">Could not turn on the "%s" module</string>
+    <string name="apm_failed_to_disable">Could not turn off the "%s" module</string>
     <string name="apm_empty">No module installed</string>
     <string name="apm_remove">Remove</string>
     <string name="apm_install">Install</string>
     <string name="apm_uninstall_confirm">Uninstall the "%s" module?</string>
     <string name="apm_uninstall_success">%s uninstalled</string>
-    <string name="apm_uninstall_failed">Couldn&apos;t uninstall %s</string>
+    <string name="apm_uninstall_failed">Could not uninstall %s</string>
     <string name="apm_version">Version</string>
     <string name="apm_author">Author</string>
     <string name="apm_desc">Desc</string>
@@ -176,7 +176,7 @@
     <string name="enable_web_debugging">Enable WebView debugging</string>
     <string name="enable_web_debugging_summary">Can be used to debug WebUI. Please enable only when needed.</string>
 
-    <string name="settings_donot_store_superkey">Don&apos;t store SuperKey in local</string>
+    <string name="settings_donot_store_superkey">Do not store SuperKey in local</string>
     <string name="settings_donot_store_superkey_summary">Authenticate the SuperKey every time the manager starts</string>
 
     <string name="home_new_apatch_found">New version %s is available, click to upgrade.</string>
@@ -188,7 +188,7 @@
     <string name="mode_select_page_install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
 
     <string name="home_dialog_auth_fail_title">Authentication failed</string>
-    <string name="home_dialog_auth_fail_content">Unable to authenticate the SuperKey, therefore APatch cannot work properly.\nHere are some possible reasons for authentication failure:\n1. You didn&apos;t patch the boot.img with KernelPatch.\n2. The patched boot.img wasn&apos;t flashed.\n3. The SuperKey is wrong or contains special characters.\n4. Your device doesn&apos;t support APatch and KernelPatch.\n\nPlease check and try again. If there are still issues, you can always ask questions on the official repository&apos;s issues page.</string>
+    <string name="home_dialog_auth_fail_content">Unable to authenticate the SuperKey, therefore APatch cannot work properly.\nHere are some possible reasons for authentication failure:\n1. You did not patch the boot.img with KernelPatch.\n2. The patched boot.img was not flashed.\n3. The SuperKey is wrong or contains special characters.\n4. Your device does not support APatch and KernelPatch.\n\nPlease check and try again. If there are still issues, you can always ask questions on the official repository&apos;s issues page.</string>
 
     <string name="home_more_menu_feedback_or_suggestion">Feedback or suggestion</string>
     <string name="home_more_menu_about">About</string>
@@ -205,7 +205,7 @@
     <string name="kpm_control_ok">Operation succeeded!</string>
     <string name="kpm_control_failed">Operation failed!</string>
 
-    <string name="settings_night_mode_follow_sys">Follow system&apos;s dark theme</string>
+    <string name="settings_night_mode_follow_sys">Follow system dark theme</string>
     <string name="settings_night_mode_follow_sys_summary">Automatically switch to dark theme based on system settings</string>
 
     <string name="settings_night_theme_enabled">Enable dark theme</string>
