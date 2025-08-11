@@ -448,7 +448,7 @@ fun SettingScreen() {
 
             // Set defaults for first run of new settings
             androidx.compose.runtime.LaunchedEffect(Unit) {
-                if (!prefs.contains("card_alpha")) prefs.edit { putFloat("card_alpha", 1f) }
+                if (!prefs.contains("card_alpha")) prefs.edit { putFloat("card_alpha", 0f) }
                 if (!prefs.contains("card_dim")) prefs.edit { putFloat("card_dim", 0.5f) }
                 CardConfig.load(context)
             }
@@ -496,6 +496,7 @@ fun SettingScreen() {
                         CardConfig.isCustomAlphaSet = true
                         prefs.edit { putBoolean("is_custom_alpha_set", true); putFloat("card_alpha", newValue) }
                     },
+                    onValueChangeFinished = { CardConfig.save(context) },
                     valueRange = 0f..1f,
                     steps = 20,
                     modifier = Modifier.padding(horizontal = 12.dp),
@@ -521,6 +522,7 @@ fun SettingScreen() {
                         CardConfig.isCustomDimSet = true
                         prefs.edit { putBoolean("is_custom_dim_set", true); putFloat("card_dim", newValue) }
                     },
+                    onValueChangeFinished = { CardConfig.save(context) },
                     valueRange = 0f..1f,
                     steps = 20,
                     modifier = Modifier.padding(horizontal = 12.dp),

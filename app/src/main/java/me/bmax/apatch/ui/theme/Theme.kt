@@ -131,7 +131,7 @@ fun APatchTheme(
         applyAlphaToSurfaces(baseScheme, effectiveAlpha, CardConfig.isCustomBackgroundEnabled)
     }
 
-    SystemBarStyle(darkMode = darkTheme)
+    SystemBarStyle(darkMode = darkTheme, statusBarScrim = Color.Transparent, navigationBarScrim = Color.Transparent)
 
     MaterialTheme(colorScheme = scheme, typography = Typography) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -223,7 +223,11 @@ private fun applyAlphaToSurfaces(base: ColorScheme, alpha: Float, transparentBg:
         surfaceContainerHighest = base.surfaceContainerHighest.maybeTransparent(),
         surfaceContainerLow = base.surfaceContainerLow.maybeTransparent(),
         surfaceContainerLowest = base.surfaceContainerLowest.maybeTransparent(),
-        outline = base.outline.copy(alpha = if (transparentBg) alpha else base.outline.alpha)
+        outline = base.outline.copy(alpha = if (transparentBg) alpha else base.outline.alpha),
+        outlineVariant = base.outlineVariant.copy(alpha = if (transparentBg) alpha else base.outlineVariant.alpha),
+        primaryContainer = base.primaryContainer.maybeTransparent(),
+        secondaryContainer = base.secondaryContainer.maybeTransparent(),
+        tertiaryContainer = base.tertiaryContainer.maybeTransparent()
     )
 }
 
