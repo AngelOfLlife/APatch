@@ -208,6 +208,7 @@ fun SettingScreen() {
         // Image picker and editor state
         var showImageEditor by remember { mutableStateOf(false) }
         var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+        var isCustomBackgroundEnabled by rememberSaveable { mutableStateOf(CardConfig.isCustomBackgroundEnabled) }
         val pickImageLauncher = rememberLauncherForActivityResult(
             ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
@@ -227,6 +228,7 @@ fun SettingScreen() {
                 onConfirm = { transformedUri ->
                     context.saveCustomBackground(transformedUri)
                     CardConfig.isCustomBackgroundEnabled = true
+                    isCustomBackgroundEnabled = true
                     CardConfig.save(context)
                     showImageEditor = false
                     selectedImageUri = null
@@ -454,7 +456,6 @@ fun SettingScreen() {
             }
 
             // Custom Background switch
-            var isCustomBackgroundEnabled by rememberSaveable { mutableStateOf(CardConfig.isCustomBackgroundEnabled) }
             SwitchItem(
                 icon = Icons.Filled.Wallpaper,
                 title = stringResource(id = R.string.settings_custom_background),
@@ -503,7 +504,9 @@ fun SettingScreen() {
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
                         activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        activeTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        inactiveTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                     )
                 )
 
@@ -529,7 +532,9 @@ fun SettingScreen() {
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
                         activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        activeTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        inactiveTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                     )
                 )
             }
