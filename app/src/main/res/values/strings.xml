@@ -142,14 +142,14 @@
 
     <string name="apm">APModule</string>
     <string name="apm_not_installed">AndroidPatch not installed</string>
-    <string name="apm_failed_to_enable">Couldn't turn on the "%s" module</string>
-    <string name="apm_failed_to_disable">Couldn't turn off the "%s" module</string>
+    <string name="apm_failed_to_enable">Couldn&apos;t turn on the "%s" module</string>
+    <string name="apm_failed_to_disable">Couldn&apos;t turn off the "%s" module</string>
     <string name="apm_empty">No module installed</string>
     <string name="apm_remove">Remove</string>
     <string name="apm_install">Install</string>
     <string name="apm_uninstall_confirm">Uninstall the "%s" module?</string>
     <string name="apm_uninstall_success">%s uninstalled</string>
-    <string name="apm_uninstall_failed">Couldn't uninstall %s</string>
+    <string name="apm_uninstall_failed">Couldn&apos;t uninstall %s</string>
     <string name="apm_version">Version</string>
     <string name="apm_author">Author</string>
     <string name="apm_desc">Desc</string>

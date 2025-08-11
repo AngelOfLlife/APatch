@@ -9,7 +9,7 @@
     <string name="home_click_to_install">Kattints a telepítéshez</string>
     <string name="home_installing">Telepítés...</string>
     <string name="home_need_update">Frissítés elérhető</string>
-    <string name="apatch_version_update">Verzió: %s -&gt; %s</string>
+    <string name="apatch_version_update" formatted="false">Verzió: %s -&gt; %s</string>
     <string name="home_su_path">su: %s</string>
     <string name="home_ap_cando_install">Telepítés</string>
     <string name="home_ap_cando_update">Frissítés</string>
@@ -71,7 +71,7 @@
     <string name="clear_super_key">SzuperKulcs tisztítása</string>
     <string name="patch_set_superkey">SzuperKulcs beállítása</string>
     <string name="home_patch_set_key_desc">Kizárólag a KernelPatch hitelesítéséhez</string>
-    <string name="kpatch_version_update">Verzió: %s -&gt; %s</string>
+    <string name="kpatch_version_update" formatted="false">Verzió: %s -&gt; %s</string>
     <string name="kpatch_shadow_path_title">kpatch</string>
     <string name="home_auth_key_title">Írd be a SzuperKulcsot</string>
     <string name="home_auth_key_desc">Kezdés a tanúsítás után</string>

@@ -49,8 +49,8 @@
     <string name="home_installing">நிறுவுகிறது</string>
     <string name="kpatch_version">பதிப்பு: %s</string>
     <string name="apatch_version">பதிப்பு: %s</string>
-    <string name="apatch_version_update">பதிப்பு: %s -&gt; %s</string>
-    <string name="kpatch_version_update">பதிப்பு: %s -&gt; %s</string>
+    <string name="apatch_version_update" formatted="false">பதிப்பு: %s -&gt; %s</string>
+    <string name="kpatch_version_update" formatted="false">பதிப்பு: %s -&gt; %s</string>
     <string name="home_auth_key_title">சூப்பர்கி உள்ளிடவும்</string>
     <string name="kpatch_shadow_path_title">கேஒட்டு</string>
     <string name="home_auth_key_desc">சான்றிதழுக்குப் பிறகு தொடங்கவும்</string>
