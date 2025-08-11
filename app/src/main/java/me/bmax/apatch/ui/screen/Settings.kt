@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -36,11 +37,14 @@ import androidx.compose.material.icons.filled.FilePresent
 import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.InvertColors
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.RemoveFromQueue
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -51,6 +55,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,6 +66,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -89,10 +96,14 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.Natives
 import me.bmax.apatch.R
+import me.bmax.apatch.ui.component.ImageEditorDialog
 import me.bmax.apatch.ui.component.SwitchItem
 import me.bmax.apatch.ui.component.rememberConfirmDialog
 import me.bmax.apatch.ui.component.rememberLoadingDialog
+import me.bmax.apatch.ui.theme.CardConfig
 import me.bmax.apatch.ui.theme.refreshTheme
+import me.bmax.apatch.ui.theme.saveCustomBackground
+
 import me.bmax.apatch.util.APatchKeyHelper
 import me.bmax.apatch.util.getBugreportFile
 import me.bmax.apatch.util.isForceUsingOverlayFS
@@ -192,6 +203,38 @@ fun SettingScreen() {
                     snackBarHost.showSnackbar(message = logSavedMessage)
                 }
             }
+        }
+
+        // Image picker and editor state
+        var showImageEditor by remember { mutableStateOf(false) }
+        var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+        var isCustomBackgroundEnabled by rememberSaveable { mutableStateOf(CardConfig.isCustomBackgroundEnabled) }
+        val pickImageLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            uri?.let {
+                selectedImageUri = it
+                showImageEditor = true
+            }
+        }
+
+        if (showImageEditor && selectedImageUri != null) {
+            ImageEditorDialog(
+                imageUri = selectedImageUri!!,
+                onDismiss = {
+                    showImageEditor = false
+                    selectedImageUri = null
+                },
+                onConfirm = { transformedUri ->
+                    context.saveCustomBackground(transformedUri)
+                    CardConfig.isCustomBackgroundEnabled = true
+                    isCustomBackgroundEnabled = true
+                    CardConfig.save(context)
+                    showImageEditor = false
+                    selectedImageUri = null
+                    Toast.makeText(context, context.getString(R.string.background_set_success), Toast.LENGTH_SHORT).show()
+                }
+            )
         }
 
         Column(
@@ -402,153 +445,191 @@ fun SettingScreen() {
                         color = MaterialTheme.colorScheme.outline
                     )
                 }, leadingContent = { Icon(Icons.Filled.FormatColorFill, null) })
+
             }
 
-            // su path
-            if (kPatchReady) {
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Commit, stringResource(id = R.string.setting_reset_su_path)
-                        )
+            // Set defaults for first run of new settings
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                if (!prefs.contains("card_alpha")) prefs.edit { putFloat("card_alpha", 0f) }
+                if (!prefs.contains("card_dim")) prefs.edit { putFloat("card_dim", 0.5f) }
+                CardConfig.load(context)
+            }
+
+            // Custom Background switch
+            SwitchItem(
+                icon = Icons.Filled.Wallpaper,
+                title = stringResource(id = R.string.settings_custom_background),
+                summary = stringResource(id = R.string.settings_custom_background_summary),
+                checked = isCustomBackgroundEnabled,
+                onCheckedChange = { isChecked ->
+                    if (isChecked) {
+                        pickImageLauncher.launch("image/*")
+                    } else {
+                        context.saveCustomBackground(null)
+                        isCustomBackgroundEnabled = false
+                        CardConfig.cardAlpha = 1f
+                        CardConfig.cardDim = 0f
+                        CardConfig.isCustomAlphaSet = false
+                        CardConfig.isCustomDimSet = false
+                        CardConfig.isCustomBackgroundEnabled = false
+                        CardConfig.save(context)
+                        Toast.makeText(context, context.getString(R.string.background_removed), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
+
+            if (isCustomBackgroundEnabled) {
+                var cardAlpha by rememberSaveable { mutableFloatStateOf(CardConfig.cardAlpha) }
+                var cardDim by rememberSaveable { mutableFloatStateOf(CardConfig.cardDim) }
+
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {
+                    Icon(Icons.Filled.Opacity, contentDescription = null)
+                    Text(text = stringResource(R.string.settings_card_alpha), modifier = Modifier.padding(start = 8.dp))
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "${(cardAlpha * 100).toInt()}%")
+                }
+
+                Slider(
+                    value = cardAlpha,
+                    onValueChange = { newValue ->
+                        cardAlpha = newValue
+                        CardConfig.cardAlpha = newValue
+                        CardConfig.isCustomAlphaSet = true
+                        prefs.edit { putBoolean("is_custom_alpha_set", true); putFloat("card_alpha", newValue) }
                     },
-                    supportingContent = {},
-                    headlineContent = { Text(stringResource(id = R.string.setting_reset_su_path)) },
-                    modifier = Modifier.clickable {
-                        showResetSuPathDialog.value = true
-                    })
+                    onValueChangeFinished = { CardConfig.save(context) },
+                    valueRange = 0f..1f,
+                    steps = 20,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        activeTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        inactiveTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                    )
+                )
+
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {
+                    Icon(Icons.Filled.LightMode, contentDescription = null)
+                    Text(text = stringResource(R.string.settings_card_dim), modifier = Modifier.padding(start = 8.dp))
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "${(cardDim * 100).toInt()}%")
+                }
+
+                Slider(
+                    value = cardDim,
+                    onValueChange = { newValue ->
+                        cardDim = newValue
+                        CardConfig.cardDim = newValue
+                        CardConfig.isCustomDimSet = true
+                        prefs.edit { putBoolean("is_custom_dim_set", true); putFloat("card_dim", newValue) }
+                    },
+                    onValueChangeFinished = { CardConfig.save(context) },
+                    valueRange = 0f..1f,
+                    steps = 20,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        activeTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        inactiveTickColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
+                    )
+                )
             }
 
-            // language
+            // Check update log
             ListItem(headlineContent = {
                 Text(text = stringResource(id = R.string.settings_app_language))
             }, modifier = Modifier.clickable {
                 showLanguageDialog.value = true
-            }, supportingContent = {
-                Text(text = AppCompatDelegate.getApplicationLocales()[0]?.displayLanguage?.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(
-                        Locale.getDefault()
-                    ) else it.toString()
-                } ?: stringResource(id = R.string.system_default),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline)
             }, leadingContent = { Icon(Icons.Filled.Translate, null) })
 
-            // log
+            // Send log
             ListItem(
-                leadingContent = {
-                    Icon(
-                        Icons.Filled.BugReport, stringResource(id = R.string.send_log)
-                    )
-                },
+                leadingContent = { Icon(Icons.Filled.BugReport, stringResource(id = R.string.send_log)) },
                 headlineContent = { Text(stringResource(id = R.string.send_log)) },
-                modifier = Modifier.clickable {
-                    showLogBottomSheet = true
-                })
+                modifier = Modifier.clickable { showLogBottomSheet = true }
+            )
             if (showLogBottomSheet) {
                 ModalBottomSheet(
                     onDismissRequest = { showLogBottomSheet = false },
                     contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
-                    content = {
-                        Row(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .align(Alignment.CenterHorizontally)
-
-                        ) {
-                            Box {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .clickable {
-                                            scope.launch {
-                                                val formatter =
-                                                    DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
-                                                val current = LocalDateTime.now().format(formatter)
-                                                exportBugreportLauncher.launch("APatch_bugreport_${current}.tar.gz")
-                                                showLogBottomSheet = false
-                                            }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .align(Alignment.CenterHorizontally)
+                    ) {
+                        Box {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .clickable {
+                                        scope.launch {
+                                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
+                                            val current = LocalDateTime.now().format(formatter)
+                                            exportBugreportLauncher.launch("APatch_bugreport_${current}.tar.gz")
+                                            showLogBottomSheet = false
                                         }
-                                ) {
-                                    Icon(
-                                        Icons.Filled.Save,
-                                        contentDescription = null,
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                    Text(
-                                        text = stringResource(id = R.string.save_log),
-                                        modifier = Modifier.padding(top = 16.dp),
-                                        textAlign = TextAlign.Center.also {
-                                            LineHeightStyle(
-                                                alignment = LineHeightStyle.Alignment.Center,
-                                                trim = LineHeightStyle.Trim.None
-                                            )
-                                        }
-
-                                    )
-                                }
-
-                            }
-                            Box {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                        .clickable {
-                                            scope.launch {
-                                                val bugreport = loadingDialog.withLoading {
-                                                    withContext(Dispatchers.IO) {
-                                                        getBugreportFile(context)
-                                                    }
-                                                }
-
-                                                val uri: Uri = FileProvider.getUriForFile(
-                                                    context,
-                                                    "${BuildConfig.APPLICATION_ID}.fileprovider",
-                                                    bugreport
-                                                )
-
-                                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                                    setDataAndType(uri, "application/gzip")
-                                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                                }
-
-                                                context.startActivity(
-                                                    Intent.createChooser(
-                                                        shareIntent,
-                                                        context.getString(R.string.send_log)
-                                                    )
-                                                )
-                                                showLogBottomSheet = false
-                                            }
-                                        }) {
-                                    Icon(
-                                        Icons.Filled.Share,
-                                        contentDescription = null,
-                                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    )
-                                    Text(
-                                        text = stringResource(id = R.string.send_log),
-                                        modifier = Modifier.padding(top = 16.dp),
-                                        textAlign = TextAlign.Center.also {
-                                            LineHeightStyle(
-                                                alignment = LineHeightStyle.Alignment.Center,
-                                                trim = LineHeightStyle.Trim.None
-                                            )
-                                        }
-
-                                    )
-                                }
-
+                                    }
+                            ) {
+                                Icon(Icons.Filled.Save, contentDescription = null, modifier = Modifier.align(Alignment.CenterHorizontally))
+                                Text(
+                                    text = stringResource(id = R.string.save_log),
+                                    modifier = Modifier.padding(top = 16.dp),
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
-                        NavigationBarsSpacer()
-                    })
+                        Box {
+                            Column(
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .clickable {
+                                        scope.launch {
+                                            val bugreport = loadingDialog.withLoading {
+                                                withContext(Dispatchers.IO) { getBugreportFile(context) }
+                                            }
+                                            val uri: Uri = FileProvider.getUriForFile(
+                                                context,
+                                                "${BuildConfig.APPLICATION_ID}.fileprovider",
+                                                bugreport
+                                            )
+                                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                putExtra(Intent.EXTRA_STREAM, uri)
+                                                setDataAndType(uri, "application/gzip")
+                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                            }
+                                            context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.send_log)))
+                                            showLogBottomSheet = false
+                                        }
+                                    }
+                            ) {
+                                Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.align(Alignment.CenterHorizontally))
+                                Text(
+                                    text = stringResource(id = R.string.send_log),
+                                    modifier = Modifier.padding(top = 16.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                    NavigationBarsSpacer()
+                }
             }
 
-
+            if (BuildConfig.DEBUG) {
+                ListItem(headlineContent = {
+                    Text(text = "Test crash")
+                }, supportingContent = {
+                    Text(text = "Throw RuntimeException")
+                }, leadingContent = { Icon(Icons.Filled.BugReport, null) }, modifier = Modifier.clickable {
+                    throw RuntimeException("Test crash")
+                })
+            }
         }
-
     }
 }
 

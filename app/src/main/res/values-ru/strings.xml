@@ -14,7 +14,7 @@
     <string name="home_need_update">Доступна новая версия</string>
     <string name="kpatch_version">Версия: %s</string>
     <string name="apatch_version">Версия: %s</string>
-    <string name="apatch_version_update">Версия: %s → %s</string>
+    <string name="apatch_version_update" formatted="false">Версия: %s → %s</string>
     <string name="home_su_path">Исполняемый файл su</string>
     <string name="home_apatch_version">Версия APatch</string>
     <string name="home_kernel">Версия ядра</string>
@@ -26,8 +26,8 @@
     <string name="home_selinux_status_permissive">Разрешающий</string>
     <string name="home_selinux_status_unknown">Неизвестно</string>
     <string name="su_title">SuperUser</string>
-    <string name="apm_failed_to_enable">Не удалось включить модуль \"%s\"</string>
-    <string name="apm_failed_to_disable">Не удалось отключить модуль \"%s\"</string>
+    <string name="apm_failed_to_enable">Не удалось включить модуль "%s"</string>
+    <string name="apm_failed_to_disable">Не удалось отключить модуль "%s"</string>
     <string name="apm_empty">Нет установленных модулей</string>
     <string name="kpm">Модули KP</string>
     <string name="apm">Модули AP</string>
@@ -41,7 +41,7 @@
     <string name="reboot_download">Перезагрузить в Download</string>
     <string name="reboot_edl">Перезагрузить в EDL</string>
     <string name="about">О приложении</string>
-    <string name="apm_uninstall_confirm">Удалить модуль \"%s\"?</string>
+    <string name="apm_uninstall_confirm">Удалить модуль "%s"?</string>
     <string name="apm_uninstall_success">%s удален</string>
     <string name="apm_uninstall_failed">Не удалось удалить %s</string>
     <string name="apm_version">Версия</string>
@@ -59,7 +59,7 @@
     <string name="home_click_to_learn_apatch">Узнайте о возможностях APatch и о том, как его использовать</string>
     <string name="about_source_code"><![CDATA[<p>Посмотрите исходный код на %1$s<p/>Присоединяйтесь к нашему каналу %2$s</p>Присоединяйтесь к нашей группе %3$s]]></string>
     <string name="apm_update">Обновить</string>
-    <string name="apm_downloading">Загрузка модуля \"%s\"…</string>
+    <string name="apm_downloading">Загрузка модуля "%s"…</string>
     <string name="apm_start_downloading">Начало скачивания %s</string>
     <string name="apm_new_version_available">Доступна новая версия %s, нажмите для обновления.</string>
     <string name="apm_changelog">Список изменений</string>
@@ -86,7 +86,7 @@
     <string name="home_ap_cando_install">Установить</string>
     <string name="home_ap_cando_update">Обновить</string>
     <string name="home_ap_cando_uninstall">Удалить</string>
-    <string name="kpm_unload_confirm">Выгрузить модуль \"%s\"?</string>
+    <string name="kpm_unload_confirm">Выгрузить модуль "%s"?</string>
     <string name="clear_super_key">Стереть суперключ</string>
     <string name="apm_not_installed">AndroidPatch не установлен</string>
     <string name="settings_app_language">Язык</string>
@@ -94,7 +94,6 @@
     <string name="patch">Залатать</string>
     <string name="settings_global_namespace_mode">Режим глобального пространства имён</string>
     <string name="settings_global_namespace_mode_summary">Все сеансы суперпользователя root используют монтирование глобального пространства имён</string>
-    <string name="kpatch_version_update">Версия: %s → %s</string>
     <string name="home_kpatch_info_title">Подробнее</string>
     <string name="home_ap_cando_reboot">Перезагрузить</string>
     <string name="patch_config_title">Заплатки</string>
@@ -207,4 +206,16 @@
     <string name="crash_handle_copied">Журнал сбоев скопирован в буфер обмена.</string>
     <string name="log_saved">Логи сохранены</string>
     <string name="crash_handle_title">Сбой приложения…</string>
+
+    <!-- New strings -->
+    <string name="settings_custom_background">Пользовательский фон приложения</string>
+    <string name="settings_custom_background_summary">Выберите изображение в качестве фона</string>
+    <string name="settings_card_alpha">Прозрачность панели навигации</string>
+    <string name="settings_card_dim">Затемнение карточек</string>
+    <string name="image_editor_hint">Используйте два пальца для увеличения изображения, и один палец для изменения положения</string>
+    <string name="confirm">Готово</string>
+    <string name="cancel">Отмена</string>
+    <string name="reset">Сброс</string>
+    <string name="background_set_success">Фон установлен</string>
+    <string name="background_removed">Фон удалён</string>
 </resources>

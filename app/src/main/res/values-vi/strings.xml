@@ -22,7 +22,7 @@
     <string name="home_installing">Đang cài đặt</string>
     <string name="home_need_update">Có bản cập nhật mới</string>
     <string name="kpatch_version">Phiên bản: %s</string>
-    <string name="apatch_version_update">Phiên bản: %s -&gt; %s</string>
+    <string name="apatch_version_update" formatted="false">Phiên bản: %s -&gt; %s</string>
     <string name="home_auth_key_title">Nhập SuperKey</string>
     <string name="home_auth_key_desc">Bắt đầu sau khi được chứng nhận</string>
     <string name="home_ap_cando_install">Tải Xuống</string>
@@ -200,7 +200,7 @@
     <string name="lime_theme">Chủ đề vôi</string>
     <string name="purple_theme">Chủ đề màu tím</string>
     <string name="about_powered_by">Được cung cấp bởi %1$s</string>
-    <string name="kpatch_version_update">Phiên bản: %s -&gt; %s</string>
+    <string name="kpatch_version_update" formatted="false">Phiên bản: %s -&gt; %s</string>
     <string name="home_more_menu_about">Giới thiệu</string>
     <string name="home_dialog_uninstall_title">Gỡ cài đặt</string>
     <string name="save_log">Lưu nhật ký</string>
