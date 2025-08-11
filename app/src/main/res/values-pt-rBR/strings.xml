@@ -38,7 +38,7 @@
     <string name="kpatch_version">Versão: %s</string>
     <string name="apatch_version">Versão: %s</string>
     <string name="home_su_path">Su executável</string>
-    <string name="apatch_version_update">Versão: %s -&gt; %s</string>
+    <string name="apatch_version_update" formatted="false">Versão: %s -&gt; %s</string>
     <string name="home_apatch_version">Versão do APatch</string>
     <string name="home_auth_key_title">Inserir SuperKey</string>
     <string name="home_auth_key_desc">Iniciar após a certificação</string>
@@ -94,7 +94,7 @@
     <string name="patch">Patch</string>
     <string name="settings_global_namespace_mode">Modo de namespace global</string>
     <string name="settings_global_namespace_mode_summary">Todas as sessões root usam o namespace de montagem global</string>
-    <string name="kpatch_version_update">Versão: %s -&gt; %s</string>
+    <string name="kpatch_version_update" formatted="false">Versão: %s -&gt; %s</string>
     <string name="kpatch_shadow_path_title">kpatch</string>
     <string name="home_kpatch_info_title">Informações</string>
     <string name="home_ap_cando_reboot">Reiniciar</string>

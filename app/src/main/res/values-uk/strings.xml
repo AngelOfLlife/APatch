@@ -59,7 +59,7 @@
     <string name="home_click_to_learn_apatch">Дізнайтеся більше про можливості APatch і про його використання</string>
     <string name="about_source_code"><![CDATA[<p> Перегляньте вихідний код на %1$s<p/> Приєднуйтеся до нашого каналу %2$s<p/> Приєднуйтеся до нашої групи %3$s]]></string>
     <string name="send_log">Надіслати журнали</string>
-    <string name="apatch_version_update">Версія: %s → %s</string>
+    <string name="apatch_version_update" formatted="false">Версія: %s → %s</string>
     <string name="home_apatch_version">Версія APatch</string>
     <string name="home_need_update">Доступне оновлення</string>
     <string name="home_auth_key_desc">Почати після сертифікації</string>
@@ -125,7 +125,7 @@
     <string name="patch_item_set_skey_label">SuperKey має містити 8-63 символи та містити цифри та літери, але без спеціальних символів.</string>
     <string name="patch_item_skey">СуперКлюч</string>
     <string name="settings_clear_super_key_dialog">Ви дійсно хочете продовжити?</string>
-    <string name="kpatch_version_update">Версія: %s -&gt; %s</string>
+    <string name="kpatch_version_update" formatted="false">Версія: %s -&gt; %s</string>
     <string name="home_kpatch_info_title">Інфо</string>
     <string name="settings_check_update_summary">Автоматично перевіряти оновлення при відкритті застосунку</string>
     <string name="success">Успішно</string>
