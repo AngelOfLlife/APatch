@@ -446,6 +446,13 @@ fun SettingScreen() {
 
             }
 
+            // Set defaults for first run of new settings
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                if (!prefs.contains("card_alpha")) prefs.edit { putFloat("card_alpha", 1f) }
+                if (!prefs.contains("card_dim")) prefs.edit { putFloat("card_dim", 0.5f) }
+                CardConfig.load(context)
+            }
+
             // Custom Background switch
             var isCustomBackgroundEnabled by rememberSaveable { mutableStateOf(CardConfig.isCustomBackgroundEnabled) }
             SwitchItem(
@@ -474,7 +481,7 @@ fun SettingScreen() {
                 var cardAlpha by rememberSaveable { mutableFloatStateOf(CardConfig.cardAlpha) }
                 var cardDim by rememberSaveable { mutableFloatStateOf(CardConfig.cardDim) }
 
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {
                     Icon(Icons.Filled.Opacity, contentDescription = null)
                     Text(text = stringResource(R.string.settings_card_alpha), modifier = Modifier.padding(start = 8.dp))
                     Spacer(modifier = Modifier.weight(1f))
@@ -491,6 +498,7 @@ fun SettingScreen() {
                     },
                     valueRange = 0f..1f,
                     steps = 20,
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
                         activeTrackColor = MaterialTheme.colorScheme.primary,
@@ -498,7 +506,7 @@ fun SettingScreen() {
                     )
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)) {
                     Icon(Icons.Filled.LightMode, contentDescription = null)
                     Text(text = stringResource(R.string.settings_card_dim), modifier = Modifier.padding(start = 8.dp))
                     Spacer(modifier = Modifier.weight(1f))
@@ -515,6 +523,7 @@ fun SettingScreen() {
                     },
                     valueRange = 0f..1f,
                     steps = 20,
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
                         activeTrackColor = MaterialTheme.colorScheme.primary,

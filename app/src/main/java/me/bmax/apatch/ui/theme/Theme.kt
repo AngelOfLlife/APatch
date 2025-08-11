@@ -125,8 +125,10 @@ fun APatchTheme(
         rememberAsyncImagePainter(model = it, onSuccess = { ThemeConfig.backgroundImageLoaded = true })
     }
 
-    val scheme = remember(baseScheme, CardConfig.cardAlpha, CardConfig.isCustomBackgroundEnabled) {
-        applyAlphaToSurfaces(baseScheme, CardConfig.cardAlpha, CardConfig.isCustomBackgroundEnabled)
+    // Interpret slider as transparency percent (0..1); convert to actual alpha that surfaces should use
+    val effectiveAlpha = remember(CardConfig.cardAlpha) { 1f - CardConfig.cardAlpha }
+    val scheme = remember(baseScheme, effectiveAlpha, CardConfig.isCustomBackgroundEnabled) {
+        applyAlphaToSurfaces(baseScheme, effectiveAlpha, CardConfig.isCustomBackgroundEnabled)
     }
 
     SystemBarStyle(darkMode = darkTheme)
@@ -144,7 +146,7 @@ fun APatchTheme(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(if (darkTheme) Color.Black.copy(alpha = 0.6f + CardConfig.cardDim * 0.3f) else Color.White.copy(alpha = 0.1f + CardConfig.cardDim * 0.2f))
+                        .background(Color.Black.copy(alpha = CardConfig.cardDim))
                 )
 
                 Box(
@@ -220,7 +222,8 @@ private fun applyAlphaToSurfaces(base: ColorScheme, alpha: Float, transparentBg:
         surfaceContainerHigh = base.surfaceContainerHigh.maybeTransparent(),
         surfaceContainerHighest = base.surfaceContainerHighest.maybeTransparent(),
         surfaceContainerLow = base.surfaceContainerLow.maybeTransparent(),
-        surfaceContainerLowest = base.surfaceContainerLowest.maybeTransparent()
+        surfaceContainerLowest = base.surfaceContainerLowest.maybeTransparent(),
+        outline = base.outline.copy(alpha = if (transparentBg) alpha else base.outline.alpha)
     )
 }
 
