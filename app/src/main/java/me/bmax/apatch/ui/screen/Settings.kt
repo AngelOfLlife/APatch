@@ -103,8 +103,7 @@ import me.bmax.apatch.ui.component.rememberLoadingDialog
 import me.bmax.apatch.ui.theme.CardConfig
 import me.bmax.apatch.ui.theme.refreshTheme
 import me.bmax.apatch.ui.theme.saveCustomBackground
-import me.bmax.apatch.ui.util.BackgroundTransformation
-import me.bmax.apatch.ui.util.saveTransformedBackground
+
 import me.bmax.apatch.util.APatchKeyHelper
 import me.bmax.apatch.util.getBugreportFile
 import me.bmax.apatch.util.isForceUsingOverlayFS

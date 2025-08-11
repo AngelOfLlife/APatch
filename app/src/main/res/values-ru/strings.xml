@@ -14,7 +14,7 @@
     <string name="home_need_update">Доступна новая версия</string>
     <string name="kpatch_version">Версия: %s</string>
     <string name="apatch_version">Версия: %s</string>
-    <string name="apatch_version_update">Версия: %s → %s</string>
+    <string name="apatch_version_update" formatted="false">Версия: %s → %s</string>
     <string name="home_su_path">Исполняемый файл su</string>
     <string name="home_apatch_version">Версия APatch</string>
     <string name="home_kernel">Версия ядра</string>
