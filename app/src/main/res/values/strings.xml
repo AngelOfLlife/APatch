@@ -188,16 +188,14 @@
     <string name="mode_select_page_install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
 
     <string name="home_dialog_auth_fail_title">Authentication failed</string>
-    <string name="home_dialog_auth_fail_content"><![CDATA[
-Unable to authenticate the SuperKey, therefore APatch cannot work properly.
-Here are some possible reasons for authentication failure:
-1. You did not patch the boot.img with KernelPatch.
-2. The patched boot.img was not flashed.
-3. The SuperKey is wrong or contains special characters.
-4. Your device does not support APatch and KernelPatch.
+        <string name="home_dialog_auth_fail_content">Authentication failed.
+Possible reasons:
+1. boot.img not patched with KernelPatch.
+2. Patched boot.img not flashed.
+3. SuperKey incorrect.
+4. Device not supported by APatch/KernelPatch.
 
-Please check and try again. If there are still issues, you can always ask questions on the official repository's issues page.
-]]></string>
+Please check and try again.</string>
 
     <string name="home_more_menu_feedback_or_suggestion">Feedback or suggestion</string>
     <string name="home_more_menu_about">About</string>
