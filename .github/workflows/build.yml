@@ -32,6 +32,48 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Generate random string for package name
+        run: |
+          RANDOM_STRING=$(openssl rand -hex 4)  # Генерируем случайную hex-строку длиной 8 символов
+          echo "RANDOM_STRING=$RANDOM_STRING" >> $GITHUB_ENV
+          echo "Generated random string: $RANDOM_STRING"
+
+      - name: Randomize package name
+        run: |
+          OLD_PACKAGE="me.bmax.apatch"
+          NEW_PACKAGE="me.bmax.apatch${{ env.RANDOM_STRING }}"
+          echo "New package name: $NEW_PACKAGE"
+
+          # Замена в build.gradle.kts (applicationId)
+          sed -i "s/applicationId = \"$OLD_PACKAGE\"/applicationId = \"$NEW_PACKAGE\"/g" app/build.gradle.kts
+
+          # Замена в AndroidManifest.xml (package атрибут, если есть)
+          if [ -f app/src/main/AndroidManifest.xml ]; then
+            sed -i "s/package=\"$OLD_PACKAGE\"/package=\"$NEW_PACKAGE\"/g" app/src/main/AndroidManifest.xml
+          fi
+
+          # Глобальная замена в исходном коде (Kotlin/Java файлы, импорты, package declarations)
+          find app/src -type f \( -name "*.kt" -o -name "*.java" -o -name "*.xml" \) -exec sed -i "s/me\.bmax\.apatch/me\.bmax\.apatch${{ env.RANDOM_STRING }}/g" {} \;
+
+          # Перемещение директории источника (app/src/main/kotlin/me/bmax/apatch -> app/src/main/kotlin/me/bmax/apatchXXXX)
+          if [ -d app/src/main/kotlin/me/bmax/apatch ]; then
+            mkdir -p app/src/main/kotlin/me/bmax/apatch${{ env.RANDOM_STRING }}
+            mv app/src/main/kotlin/me/bmax/apatch/* app/src/main/kotlin/me/bmax/apatch${{ env.RANDOM_STRING }}/
+            rm -r app/src/main/kotlin/me/bmax/apatch
+          fi
+
+          # Если есть Java директория
+          if [ -d app/src/main/java/me/bmax/apatch ]; then
+            mkdir -p app/src/main/java/me/bmax/apatch${{ env.RANDOM_STRING }}
+            mv app/src/main/java/me/bmax/apatch/* app/src/main/java/me/bmax/apatch${{ env.RANDOM_STRING }}/
+            rm -r app/src/main/java/me/bmax/apatch
+          fi
+
+          # Дополнительно: Замена в других местах, если есть (например, в strings.xml для authorities)
+          if [ -f app/src/main/res/values/strings.xml ]; then
+            sed -i "s/${OLD_PACKAGE}/${NEW_PACKAGE}/g" app/src/main/res/values/strings.xml
+          fi
+
       - name: Generate version
         id: parse_version
         run: |
@@ -102,7 +144,7 @@ jobs:
         if: ${{ env.SIGNING_KEY != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: APatch
+          name: APatch-${{ env.RANDOM_STRING }}
           path: ${{steps.sign_app.outputs.signedReleaseFile}}
 
       - name: Post to channel
